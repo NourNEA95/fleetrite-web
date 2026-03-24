@@ -116,7 +116,8 @@ class GeneralAccuracyService
             'engine_work' => 0,
             'engine_idle' => 0,
             'odometer' => 0,
-            'engine_hours' => 0
+            'engine_hours' => 0,
+            'speed_limit' => 0
         ];
 
         foreach ($allData as $row) {
@@ -130,7 +131,9 @@ class GeneralAccuracyService
             $totals['engine_idle'] += (int) $row->engine_idle;
             $totals['odometer'] += (float) $row->odometer;
             $totals['engine_hours'] += (int) $row->engine_hours;
+            $totals['speed_limit'] += (int) ($row->average_speed ?? 0);
         }
+
 
         // Return all data (legacy behavior before full pagination implementation)
         return [
