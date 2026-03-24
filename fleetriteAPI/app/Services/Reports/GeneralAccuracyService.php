@@ -35,7 +35,7 @@ class GeneralAccuracyService
             'pass_key' => config('services.legacy_api.pass_key', 'AAA21A609BFD46C1437E01867D22913B'),
         ];
 
-        $apiUrl = 'https://nv.esoft-eg.com/func/process_api.php';
+        $apiUrl = (request() ? request()->getSchemeAndHttpHost() : config('app.url')) . '/fleetrite_nv_latest_version/func/process_api.php';
         $maxParallel = 50;
         $imeiChunks = array_chunk($imeis, 1);
 
@@ -54,13 +54,18 @@ class GeneralAccuracyService
             foreach ($responses as $imei => $response) {
                 if ($response->successful()) {
                     $data = $response->json();
-                    if (isset($data['key'])) {
-                        $keys[] = $data['key'];
+                    $isOk = $data && isset($data['ok']) && $data['ok'];
+                    $key = $data['key'] ?? null;
+                    
+                    if ($key) {
+                        $keys[] = $key;
                     }
+                    
                     $results[] = [
                         'imei' => $imei,
-                        'status' => $data['ok'] ? 'success' : 'error',
-                        'key' => $data['key'] ?? null
+                        'status' => $isOk ? 'success' : 'error',
+                        'key' => $key,
+                        'message' => $data['error'] ?? ($isOk ? null : 'Unknown legacy error')
                     ];
                 } else {
                     $results[] = [

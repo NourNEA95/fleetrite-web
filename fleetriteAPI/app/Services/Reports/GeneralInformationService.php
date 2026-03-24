@@ -59,7 +59,7 @@ class GeneralInformationService
             return ['status' => 'error', 'message' => 'No objects selected'];
         }
 
-        $apiUrl = 'https://nv.esoft-eg.com/func/process_api.php';
+        $apiUrl = (request() ? request()->getSchemeAndHttpHost() : config('app.url')) . '/fleetrite_nv_latest_version/func/process_api.php';
 
         $dtf_parts = explode(' ', $params['date_from'] ?? $params['from'] ?? '');
         $dtt_parts = explode(' ', $params['date_to'] ?? $params['to'] ?? '');
