@@ -1091,8 +1091,8 @@ const handleGenerate = async () => {
     let allKeys = [];
     let allData = [];
 
-    if (form.type === 'general') {
-      endpoint = '/api/reports/modular/general-information/generate';
+    if (['general', 'general_accuracy'].includes(form.type)) {
+      endpoint = form.type === 'general' ? '/api/reports/modular/general-information/generate' : '/api/reports/modular/general-accuracy/generate';
       
       // Speed optimization: Parallelize by 100 vehicles per batch
       const batchSize = 100;
