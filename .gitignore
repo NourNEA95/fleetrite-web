@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+vendor/
+fleetriteAPI/node_modules/
+fleetriteAPI/vendor/
+
+# Environment and sensitive
+.env
+.env.local
+.env.*.local
+fleetriteAPI/.env
+fleetriteAPI/.env.*
+*.key
+auth.json
+
+# Build and IDE
+dist/
+dist-ssr/
+.idea/
+.vscode/
+*.suo
+*.sln
+
+# Native and Legacy (As requested by user)
+public/fleetrite_nv_latest_version/
+fleetriteAPI/public/fleetrite_nv_latest_version/
+backup_temp/
+*.zip
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db

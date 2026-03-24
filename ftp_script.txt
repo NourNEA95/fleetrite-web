@@ -1,0 +1,11 @@
+open 167.235.1.40
+vue_front
+kDFb2pKhnkGmMeF5
+lcd dist
+prompt
+mput *
+lcd assets
+cd assets
+mput *
+disconnect
+quit
