@@ -57,81 +57,12 @@
             <h3>{{ reportTypeDisplayName }}</h3>
           </div>
 
-          <!-- Summary Dashboard Overlay (Hidden for route logs) -->
-          <div class="dashboard-grid" v-if="safeReportData.length > 0 && reportType !== 'route_data_sensors'">
-             <!-- Row 1: Key Performance -->
-             <div class="stat-card">
-                <div class="stat-icon dist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg></div>
-                <div class="stat-info">
-                  <span class="stat-label">{{ t('total_distance') }}</span>
-                  <span class="stat-value">{{ cleanValue(globalTotalRow?.route_length) || totalDistance }} <small>km</small></span>
-                </div>
-             </div>
-             
-             <div class="stat-card">
-                <div class="stat-icon fuel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 14h18M4 6h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/></svg></div>
-                <div class="stat-info">
-                  <span class="stat-label">{{ t('total_fuel') }}</span>
-                  <span class="stat-value text-info">{{ cleanValue(globalTotalRow?.fuel_consumption) || totalFuel }} <small>L</small></span>
-                </div>
-             </div>
-
-             <div class="stat-card">
-                <div class="stat-icon stops"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg></div>
-                <div class="stat-info">
-                  <span class="stat-label">{{ t('stop_count') }}</span>
-                  <span class="stat-value">{{ globalTotalRow?.stop_count || '0' }}</span>
-                </div>
-             </div>
-
-             <div class="stat-card">
-                <div class="stat-icon overspeed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
-                <div class="stat-info">
-                  <span class="stat-label">{{ t('overspeed_count') }}</span>
-                  <span class="stat-value text-warning">{{ globalTotalRow?.overspeed_count || '0' }}</span>
-                </div>
-             </div>
-
-             <!-- Row 2: Engine & Usage -->
-             <div class="stat-card">
-                <div class="stat-icon engine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v10m0 0l-4-4m4 4l4-4M5 20h14"/></svg></div>
-                <div class="stat-info">
-                  <span class="stat-label">{{ t('engine_work') }}</span>
-                  <span class="stat-value">{{ globalTotalRow?.engine_work || '-' }}</span>
-                </div>
-             </div>
-
-             <div class="stat-card">
-                <div class="stat-icon idle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h5m10 0h5M7 12a5 5 0 0110 0"/></svg></div>
-                <div class="stat-info">
-                  <span class="stat-label">{{ t('engine_idle') }}</span>
-                  <span class="stat-value text-muted">{{ globalTotalRow?.engine_idle || '-' }}</span>
-                </div>
-             </div>
-
-             <div class="stat-card">
-                <div class="stat-icon odo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
-                <div class="stat-info">
-                  <span class="stat-label">{{ t('odometer') }}</span>
-                  <span class="stat-value">{{ globalTotalRow?.odometer || '-' }}</span>
-                </div>
-             </div>
-
-             <div class="stat-card">
-                <div class="stat-icon time"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-                <div class="stat-info">
-                  <span class="stat-label">{{ t('engine_hours') }}</span>
-                  <span class="stat-value">{{ globalTotalRow?.engine_hours || '-' }}</span>
-                </div>
-             </div>
-          </div>
-
           <!-- Professional Data Table -->
           <div class="table-container shadow-sm">
             <table class="report-table" id="report-table-element">
               <thead>
                 <tr v-if="reportType.includes('general')">
-                  <th>{{ t('object') }}</th>
+                  <th class="sticky-col">{{ t('object') }}</th>
                   <th>{{ t('group') }}</th>
                   <th>{{ t('route_start') }}</th>
                   <th>{{ t('route_end') }}</th>
@@ -153,7 +84,7 @@
                   <th>{{ t('trailer') }}</th>
                 </tr>
                 <tr v-else-if="reportType === 'drives_stops'">
-                  <th>{{ t('status') }}</th>
+                  <th class="sticky-col">{{ t('status') }}</th>
                   <th>{{ t('start') }}</th>
                   <th>{{ t('end') }}</th>
                   <th>{{ t('duration') }}</th>
@@ -786,7 +717,28 @@ watch(
 .table-row:nth-child(even) { background: rgba(0, 0, 0, 0.05); }
 .table-row:hover { background: var(--border); }
 
-.sticky-col { position: sticky; left: 0; background: inherit; z-index: 10; font-weight: 700; }
+.sticky-col { 
+  position: sticky; 
+  left: 0; 
+  z-index: 20; 
+  font-weight: 700;
+  box-shadow: 2px 0 5px -2px rgba(0,0,0,0.3);
+}
+
+/* Ensure sticky th header has correct color */
+th.sticky-col {
+  background-color: #0b1eaa !important;
+  z-index: 30;
+}
+
+/* Ensure sticky td rows have solid background to avoid transparency */
+td.sticky-col {
+  background-color: var(--card) !important;
+}
+
+.table-row:nth-child(even) td.sticky-col {
+  background-color: #1a1b1e !important; /* A slightly darker shade for the even row sticky column */
+}
 
 .danger-text { color: #dc2626; font-weight: 700; }
 
