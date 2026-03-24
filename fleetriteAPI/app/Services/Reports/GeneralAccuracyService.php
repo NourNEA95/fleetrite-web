@@ -35,7 +35,7 @@ class GeneralAccuracyService
             'pass_key' => config('services.legacy_api.pass_key', 'AAA21A609BFD46C1437E01867D22913B'),
         ];
 
-        $apiUrl = (request() ? request()->getSchemeAndHttpHost() : config('app.url')) . '/fleetrite_nv_latest_version/func/process_api.php';
+        $apiUrl = 'https://nv.esoft-eg.com/func/process_api.php';
         $maxParallel = 50;
         $imeiChunks = array_chunk($imeis, 1);
 
