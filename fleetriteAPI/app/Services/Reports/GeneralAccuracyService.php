@@ -29,6 +29,7 @@ class GeneralAccuracyService
             'dialog_report_stop_duration' => $params['stop_duration'] ?? 5,
             'dialog_report_data_item_list' => is_array($params['data_items']) ? implode(',', $params['data_items']) : $params['data_items'],
             'dialog_report_type' => 'general_accuracy_save', // Specific type for Accuracy
+            'type' => 'General Accuracy', // Per user request
             'dialog_report_format' => 'json',
             'user_id' => $params['user_id'] ?? auth()->id(),
             'form_user_id' => $params['user_id'] ?? auth()->id(),
@@ -138,3 +139,5 @@ class GeneralAccuracyService
         ];
     }
 }
+
+

@@ -71,7 +71,7 @@
                   <th>{{ t('stop_duration') }}</th>
                   <th>{{ t('stop_count') }}</th>
                   <th>{{ t('top_speed') }}</th>
-                  <th>{{ t('speed_limit') }}</th>
+                  <th>{{ reportType === 'general_accuracy' ? t('speed_limit') : t('avg_speed') }}</th>
                   <th>{{ t('overspeed_count') }}</th>
                   <th>{{ t('fuel_consumption') }}</th>
                   <th>{{ t('avg_fuel') }}</th>
@@ -122,7 +122,7 @@
                     <td class="text-right">{{ formatDuration(row.stop_duration) }}</td>
                     <td class="text-center">{{ row.stop_count }}</td>
                     <td class="text-right">{{ row.top_speed }} km/h</td>
-                    <td class="text-right">{{ row.speed_limit || '80' }}</td>
+                    <td class="text-right">{{ reportType === 'general_accuracy' ? (row.average_speed || row.avg_speed || '80') : (row.avg_speed || '0') }}</td>
                     <td class="text-center" :class="{ 'danger-text': row.overspeed_count > 0 }">{{ row.overspeed_count }}</td>
                     <td class="text-right">{{ row.fuel_consumption }} L</td>
                     <td class="text-right">{{ row.average_fuel || '0' }} L/100km</td>
@@ -269,6 +269,7 @@ import { useRoute, useRouter } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
 const reportType = computed(() => route.query.type || 'general');
+console.log('ReportViewer initialized with type:', reportType.value);
 const reportKey = computed(() => route.query.key || '');
 const reportDataFromState = computed(() => history.state.reportData || []);
 
@@ -333,7 +334,10 @@ const translations = {
     end: 'END',
     duration: 'DURATION',
     length: 'LENGTH',
-    avg_speed: 'AVG. SPEED'
+    avg_speed: 'AVG. SPEED',
+    general: 'General Information',
+    general_merged: 'General Information (Merged)',
+    general_accuracy: 'General Accuracy'
   },
   ar: {
     report_results: 'نتائج التقرير',
@@ -365,7 +369,10 @@ const translations = {
     end: 'النهاية',
     duration: 'المدة',
     length: 'المسافة',
-    avg_speed: 'متوسط السرعة'
+    avg_speed: 'متوسط السرعة',
+    general: 'معلومات عامة',
+    general_merged: 'معلومات عامة (مدمج)',
+    general_accuracy: 'دقة المعلومات العامة'
   }
 };
 
