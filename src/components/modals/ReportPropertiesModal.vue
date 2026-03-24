@@ -1087,11 +1087,13 @@ const handleGenerate = async () => {
       to: toStr
     };
     
-    let endpoint = '/api/reports/generate/';
+    let endpoint = '/api/reports/generate';
+    console.log('Report generation started. Type:', form.type);
     let allKeys = [];
     let allData = [];
 
-    if (['general', 'general_accuracy'].includes(form.type)) {
+    if (['general', 'general_accuracy', 'general_merged'].includes(form.type)) {
+      console.log('Selected modular path for:', form.type);
       endpoint = form.type === 'general' ? '/api/reports/modular/general-information/generate' : '/api/reports/modular/general-accuracy/generate';
       
       // Speed optimization: Parallelize by 100 vehicles per batch
