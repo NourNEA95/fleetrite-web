@@ -96,7 +96,7 @@ class GeneralInformationService
         ];
 
         // Parallel processing
-        $maxParallel = 10;
+        $maxParallel = 50;
         $imeiChunks = array_chunk($imeis, 1); // 1 imei per request for best distribution if process_api takes long, or chunk by larger for faster network
 
         $keys = [];

@@ -37,7 +37,11 @@
               </p>
               
               <div class="progress-bar-container">
-                <div class="premium-progress-bar"></div>
+                <div class="premium-progress-bar" :style="{ width: generationProgress + '%' }"></div>
+              </div>
+              
+              <div v-if="totalChunks > 1" class="progress-info">
+                <span class="progress-text">Processing Batch {{ currentChunk }} of {{ totalChunks }}</span>
               </div>
               
               <div class="loading-steps">
@@ -471,6 +475,9 @@ const toast = reactive({
 const isSaving = ref(false);
 const isGenerating = ref(false);
 const activeDropdown = ref(null);
+const generationProgress = ref(0);
+const totalChunks = ref(1);
+const currentChunk = ref(0);
 
 const showToast = (message, type = 'success') => {
   toast.message = message;
@@ -1066,40 +1073,93 @@ const handleGenerate = async () => {
   }
 
   isGenerating.value = true;
+  generationProgress.value = 0;
+  totalChunks.value = 1;
+  currentChunk.value = 0;
+
   try {
     const fromStr = `${form.date_from} ${form.hour_from}:${form.minute_from}:00`;
     const toStr = `${form.date_to} ${form.hour_to}:${form.minute_to}:59`;
 
-    const payload = {
+    const basePayload = {
       ...form,
       from: fromStr,
       to: toStr
     };
     
     let endpoint = '/api/reports/generate/';
+    let allKeys = [];
+    let allData = [];
+
     if (form.type === 'general') {
       endpoint = '/api/reports/modular/general-information/generate';
-    }
-    
-    const response = await api.post(endpoint, payload);
-    
-    if (response?.data?.status === 'success') {
+      
+      // Speed optimization: Parallelize by 100 vehicles per batch
+      const batchSize = 100;
+      const chunks = [];
+      for (let i = 0; i < form.imei.length; i += batchSize) {
+        chunks.push(form.imei.slice(i, i + batchSize));
+      }
+      
+      totalChunks.value = chunks.length;
+      
+      // Execute in parallel
+      const promises = chunks.map(async (chunk, index) => {
+        const payload = { ...basePayload, imei: chunk };
+        try {
+          const response = await api.post(endpoint, payload);
+          currentChunk.value++;
+          generationProgress.value = Math.round((currentChunk.value / totalChunks.value) * 100);
+          
+          if (response?.data?.status === 'success') {
+             if (response.data.keys) allKeys.push(...response.data.keys);
+             else if (response.data.key) allKeys.push(response.data.key);
+             
+             if (response.data.data) allData.push(...response.data.data);
+          }
+          return response;
+        } catch (e) {
+          console.error(`Batch ${index + 1} failed:`, e);
+          throw e;
+        }
+      });
+      
+      await Promise.all(promises);
+      
+      if (allKeys.length === 0 && allData.length === 0) {
+        throw new Error('All batches failed or returned no data');
+      }
+
       showToast('Report generated successfully!');
       emit('generated', { 
          type: form.type, 
-         data: response.data.data || [],
-         key: response.data.key || '',
-         keys: response.data.keys || null
+         data: allData,
+         keys: allKeys
       });
       emit('close');
+
     } else {
-       showToast(response?.data?.message || 'Failed to generate report', 'error');
+      // Standard single-request generation for other types
+      const response = await api.post(endpoint, basePayload);
+      if (response?.data?.status === 'success') {
+        showToast('Report generated successfully!');
+        emit('generated', { 
+           type: form.type, 
+           data: response.data.data || [],
+           key: response.data.key || '',
+           keys: response.data.keys || null
+        });
+        emit('close');
+      } else {
+         showToast(response?.data?.message || 'Failed to generate report', 'error');
+      }
     }
   } catch (error) {
     console.error('Generation failed:', error);
-    showToast(error.response?.data?.message || 'Failed to generate report', 'error');
+    showToast(error.response?.data?.message || error.message || 'Failed to generate report', 'error');
   } finally {
     isGenerating.value = false;
+    generationProgress.value = 0;
   }
 };
 
@@ -1402,6 +1462,18 @@ const handleSave = async () => {
 
 .mt-16 { margin-top: 16px; }
 .mt-32 { margin-top: 32px; }
+
+.progress-info {
+  margin-top: 12px;
+  text-align: center;
+}
+
+.progress-text {
+  font-size: 13px;
+  color: #3b82f6;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
 
 /* Scrollbar */
 /* Multi-select Styles */
