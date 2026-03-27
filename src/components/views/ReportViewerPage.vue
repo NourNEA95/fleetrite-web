@@ -95,6 +95,25 @@
                   <th>{{ t('engine_idle') }}</th>
                   <th>{{ t('driver') }}</th>
                 </tr>
+                <tr v-else-if="reportType === 'travel_sheet'">
+                  <th class="sticky-col">#</th>
+                  <th>{{ t('object') }}</th>
+                  <th>{{ t('group') }}</th>
+                  <th>{{ t('time_a') }}</th>
+                  <th>{{ t('position_a') }}</th>
+                  <th>{{ t('odometer_a') }}</th>
+                  <th>{{ t('time_b') }}</th>
+                  <th>{{ t('position_b') }}</th>
+                  <th>{{ t('odometer_b') }}</th>
+                  <th>{{ t('duration') }}</th>
+                  <th>{{ t('stop_duration') }}</th>
+                  <th>{{ t('route_length') }}</th>
+                  <th>{{ t('fuel_consumption') }}</th>
+                  <th>{{ t('avg_fuel') }}</th>
+                  <th>{{ t('fuel_cost') }}</th>
+                  <th>{{ t('driver') }}</th>
+                  <th>{{ t('trailer') }}</th>
+                </tr>
                 <!-- Special Header for Dynamic Route Sensors -->
                  <tr v-else-if="reportType === 'route_data_sensors'" align="center" style="background-color:#0b1eaa;">
                    <th v-for="(lab, index) in (safeReportData[0]?.labels || [])" :key="index">
@@ -136,6 +155,34 @@
                   </tr>
                 </template>
                 
+                <template v-else-if="reportType === 'travel_sheet'">
+                  <template v-for="(group, gIdx) in tableRowsGrouped" :key="gIdx">
+                    <tr class="imei-header-row">
+                      <td colspan="17" class="text-center font-bold bg-light-blue py-2">
+                        {{ group.object || group.imei }} ({{ group.imei }})
+                      </td>
+                    </tr>
+                    <tr v-for="(row, idx) in group.rows" :key="idx" class="table-row">
+                      <td class="sticky-col font-bold">{{ idx + 1 }}</td>
+                      <td>{{ row.object || row.imei }}</td>
+                      <td>{{ row.group || 'No Group' }}</td>
+                      <td>{{ row.start_time }}</td>
+                      <td>{{ row.departed_from }}</td>
+                      <td>{{ row.start_odometer }}</td>
+                      <td>{{ row.end_time }}</td>
+                      <td>{{ row.arrived_at }}</td>
+                      <td>{{ row.end_odometer }}</td>
+                      <td class="text-right">{{ formatDuration(row.duration) }}</td>
+                      <td class="text-right">{{ formatDuration(row.stop_duration) }}</td>
+                      <td class="text-right">{{ row.distance_travelled }} km</td>
+                      <td class="text-right">{{ row.fuel_consumption }} L</td>
+                      <td class="text-right">{{ row.avg_fuel_consumption }} L/100km</td>
+                      <td class="text-right">{{ row.fuel_cost }}</td>
+                      <td>{{ row.driver || 'n/a' }}</td>
+                      <td>{{ row.trailer || 'n/a' }}</td>
+                    </tr>
+                  </template>
+                </template>
                 <template v-else-if="reportType === 'drives_stops'">
                   <tr v-for="(row, idx) in tableRows" :key="idx" class="table-row">
                     <td>
@@ -232,10 +279,10 @@
                 <div class="rows-selector" v-if="!generalPaginated.loading">
                   <span>Rows per page:</span>
                   <select v-model="generalPaginated.per_page" @change="loadGeneralInfoPage(1)">
-                    <option :value="100">100</option>
-                    <option :value="250">250</option>
-                    <option :value="500">500</option>
                     <option :value="1000">1000</option>
+                    <option :value="2500">2500</option>
+                    <option :value="5000">5000</option>
+                    <option :value="10000">10000</option>
                   </select>
                 </div>
                 
@@ -279,7 +326,7 @@ const closePage = () => { router.back(); };
 
 // When type is general and we have a key but no data, data is loaded via paginated API
 const isGeneralKeyBased = computed(() => {
-  const isTypeMatch = ['general', 'general_information', 'general_accuracy', 'general_merged'].includes(reportType.value);
+  const isTypeMatch = ['general', 'general_information', 'general_accuracy', 'general_merged', 'travel_sheet'].includes(reportType.value);
   const hasIdentifier = (String(reportKey.value || '').trim().length > 0 || reportId.value || hashId.value);
   const isDataEmpty = (reportDataFromState.value.length === 0);
 
@@ -292,7 +339,7 @@ const generalPaginated = ref({
   current_page: 1,
   last_page: 1,
   total: 0,
-  per_page: 1000,
+  per_page: 10000,
   loading: false
 });
 
@@ -340,7 +387,15 @@ const translations = {
     avg_speed: 'AVG. SPEED',
     general: 'General Information',
     general_merged: 'General Information (Merged)',
-    general_accuracy: 'General Accuracy'
+    general_accuracy: 'General Accuracy',
+    travel_sheet: 'Travel Sheet',
+    time_a: 'TIME A',
+    position_a: 'POSITION A',
+    odometer_a: 'ODOMETER A',
+    time_b: 'TIME B',
+    position_b: 'POSITION B',
+    odometer_b: 'ODOMETER B',
+    max_speed: 'MAX SPEED'
   },
   ar: {
     report_results: 'نتائج التقرير',
@@ -375,7 +430,15 @@ const translations = {
     avg_speed: 'متوسط السرعة',
     general: 'معلومات عامة',
     general_merged: 'معلومات عامة (مدمج)',
-    general_accuracy: 'دقة المعلومات العامة'
+    general_accuracy: 'دقة المعلومات العامة',
+    travel_sheet: 'تقرير الرحلات المجمع',
+    time_a: 'وقت البداية',
+    position_a: 'مكان التحرك',
+    odometer_a: 'عداد البداية',
+    time_b: 'وقت النهاية',
+    position_b: 'مكان الوصول',
+    odometer_b: 'عداد النهاية',
+    max_speed: 'أقصى سرعة'
   }
 };
 
@@ -433,6 +496,20 @@ const tableRows = computed(() => {
     );
 });
 
+const tableRowsGrouped = computed(() => {
+  if (reportType.value !== 'travel_sheet') return [];
+  const groups = [];
+  let currentGroup = null;
+  tableRows.value.forEach(row => {
+    if (!currentGroup || currentGroup.imei !== row.imei) {
+      currentGroup = { imei: row.imei, object: row.object, rows: [] };
+      groups.push(currentGroup);
+    }
+    currentGroup.rows.push(row);
+  });
+  return groups;
+});
+
 // Utility to strip units for calculations/display
 const cleanValue = (val) => {
     if (val === undefined || val === null) return '';
@@ -485,7 +562,7 @@ const exportHTML = () => {
 
 // Load paginated general info data when we have key but no data
 const loadGeneralInfoPage = async (page = 1) => {
-  if (!['general', 'general_information', 'general_accuracy', 'general_merged'].includes(reportType.value)) return;
+  if (!['general', 'general_information', 'general_accuracy', 'general_merged', 'travel_sheet'].includes(reportType.value)) return;
   const keysParam = Array.isArray(reportKey.value) ? reportKey.value.join(',') : reportKey.value;
   const idParam = reportId.value;
   const hashIdParam = hashId.value;
@@ -498,13 +575,15 @@ const loadGeneralInfoPage = async (page = 1) => {
   generalPaginated.value.loading = true;
   try {
     let endpoint = '/api/reports/paginated';
-    if (['general', 'general_information', 'general_accuracy', 'general_merged'].includes(reportType.value)) {
+    if (['general', 'general_information', 'general_accuracy', 'general_merged', 'travel_sheet'].includes(reportType.value)) {
       if (reportType.value === 'general' || reportType.value === 'general_information') {
         endpoint = '/api/reports/modular/general-information/fetch';
       } else if (reportType.value === 'general_accuracy') {
         endpoint = '/api/reports/modular/general-accuracy/fetch';
       } else if (reportType.value === 'general_merged') {
         endpoint = '/api/reports/modular/general-merged/fetch';
+      } else if (reportType.value === 'travel_sheet') {
+        endpoint = '/api/reports/modular/travel-sheet/fetch';
       }
     }
     
@@ -518,12 +597,12 @@ const loadGeneralInfoPage = async (page = 1) => {
     });
     
     // The modular API returns { data: [...], totals: {...} }
-    if (['general', 'general_accuracy', 'general_merged'].includes(reportType.value)) {
+    if (['general', 'general_accuracy', 'general_merged', 'travel_sheet'].includes(reportType.value)) {
       generalPaginated.value.data = res.data.data || [];
       generalPaginated.value.totals_row = res.data.totals || null;
-      generalPaginated.value.current_page = 1;
-      generalPaginated.value.last_page = 1;
-      generalPaginated.value.total = generalPaginated.value.data.length;
+      generalPaginated.value.current_page = res.data.current_page || page;
+      generalPaginated.value.last_page = res.data.last_page || 1;
+      generalPaginated.value.total = res.data.total || generalPaginated.value.data.length;
     } else {
       generalPaginated.value.data = res.data.data || [];
       generalPaginated.value.totals_row = res.data.totals_row || null;
@@ -908,4 +987,17 @@ td.sticky-col {
 [dir="rtl"] .report-table th, 
 [dir="rtl"] .report-table td { text-align: right; }
 [dir="rtl"] .sticky-col { left: auto; right: 0; }
+
+.imei-header-row td {
+    background-color: #326099 !important;
+    color: white !important;
+    text-align: center !important;
+    font-weight: bold !important;
+    border-bottom: 2px solid #1f3e64 !important;
+}
+
+.bg-light-blue {
+    background-color: #e3f2fd !important;
+    color: #1f3e64 !important;
+}
 </style>

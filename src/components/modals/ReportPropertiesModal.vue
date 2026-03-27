@@ -1092,7 +1092,7 @@ const handleGenerate = async () => {
     let allKeys = [];
     let allData = [];
 
-    if (['general', 'general_accuracy', 'general_merged'].includes(form.type)) {
+    if (['general', 'general_accuracy', 'general_merged', 'travel_sheet'].includes(form.type)) {
       console.log('Selected modular path for:', form.type);
       let initEndpoint = '';
       let genEndpoint = '';
@@ -1106,6 +1106,9 @@ const handleGenerate = async () => {
       } else if (form.type === 'general_merged') {
         initEndpoint = '/api/reports/modular/general-merged/init';
         genEndpoint = '/api/reports/modular/general-merged/generate';
+      } else if (form.type === 'travel_sheet') {
+        initEndpoint = '/api/reports/modular/travel-sheet/init';
+        genEndpoint = '/api/reports/modular/travel-sheet/generate';
       }
       
       // 1. Initialize session
@@ -1115,27 +1118,60 @@ const handleGenerate = async () => {
       }
       const hash_id = initRes.data.hash_id;
 
-      // 2. Chunking (100 vehicles per batch)
+      // 2. Chunking
       const imeis = Array.isArray(form.imei) ? form.imei : (form.imei ? [form.imei] : []);
-      const batchSize = 100;
+      let batchSize = 100;
+      let maxParallel = 0; // 0 means all chunks in parallel
+
+      if (form.type === 'travel_sheet') {
+        batchSize = 1;
+        maxParallel = 100; 
+      }
+
       const chunks = [];
       for (let i = 0; i < imeis.length; i += batchSize) {
         chunks.push(imeis.slice(i, i + batchSize));
       }
 
-      // 3. Batched generation (Parallel)
+      // 3. Batched generation (Parallel with Throttling if needed)
       currentChunk.value = 0;
       totalChunks.value = chunks.length;
-      
-      const promises = chunks.map(chunk => {
-        const payload = { ...basePayload, imei: chunk, hash_id };
-        return api.post(genEndpoint, payload).then(() => {
-          currentChunk.value++;
-          generationProgress.value = Math.round((currentChunk.value / totalChunks.value) * 100);
-        });
-      });
 
-      await Promise.all(promises);
+      if (maxParallel > 0) {
+        // Throttled Parallel Execution
+        const results = [];
+        const executing = new Set();
+        
+        for (const chunk of chunks) {
+          const payload = { ...basePayload, imei: chunk, hash_id };
+          const p = api.post(genEndpoint, payload).then(() => {
+            currentChunk.value++;
+            generationProgress.value = Math.round((currentChunk.value / totalChunks.value) * 100);
+            executing.delete(p);
+          }).catch(err => {
+            executing.delete(p);
+            throw err;
+          });
+          
+          results.push(p);
+          executing.add(p);
+          
+          if (executing.size >= maxParallel) {
+            await Promise.race(executing);
+          }
+        }
+        await Promise.all(results);
+      } else {
+        // Fast Parallel (All at once)
+        const promises = chunks.map(chunk => {
+          const payload = { ...basePayload, imei: chunk, hash_id };
+          return api.post(genEndpoint, payload).then(() => {
+            currentChunk.value++;
+            generationProgress.value = Math.round((currentChunk.value / totalChunks.value) * 100);
+          });
+        });
+        await Promise.all(promises);
+      }
       
       showToast('Report generated successfully!');
       emit('generated', { 

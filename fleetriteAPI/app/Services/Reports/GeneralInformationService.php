@@ -158,7 +158,7 @@ class GeneralInformationService
         ];
     }
 
-    public function fetch($keysParam, $dataItemsArray, $id = null)
+    public function fetch($keysParam, $dataItemsArray, $page = 1, $perPage = 10000, $id = null)
     {
         if ($id) {
             $generated = (array) DB::table('gs_user_reports_generated')->where('report_id', $id)->first();
@@ -176,16 +176,19 @@ class GeneralInformationService
         }
 
         if (empty($keys)) {
-            return ['data' => [], 'totals' => []];
+            return ['data' => [], 'totals' => [], 'total' => 0];
         }
 
-        $rows = DB::table('general_information_reports2_api')
+        $query = DB::table('general_information_reports2_api')
             ->whereIn('table_key', $keys)
-            ->where('type', 0)
-            ->orderBy('id')
-            ->get();
+            ->where('type', 0);
 
-        $processedRows = [];
+        $totalCount = $query->count();
+
+        // Calculate totals for the WHOLE report (all keys)
+        // For performance with 40k+ rows, we'd ideally use SQL SUMs, but durations are strings.
+        // We'll fetch all rows for totals for now to maintain accuracy of existing logic.
+        $allRows = $query->orderBy('id')->get();
         
         $totals = [
             "route_length" => 0,
@@ -203,31 +206,21 @@ class GeneralInformationService
             "engine_hours" => 0
         ];
 
-        foreach ($rows as $row) {
+        foreach ($allRows as $row) {
             $rowObj = (array) $row;
-            
-            // Clean up numbers
-            $rowObj['route_length_val'] = floatval(str_replace(' km', '', $rowObj['route_length'] ?? '0'));
-            $totals['route_length'] += $rowObj['route_length_val'];
-
+            $totals['route_length'] += floatval(str_replace(' km', '', $rowObj['route_length'] ?? '0'));
             $totals['route_duration'] += $this->parseDurationToSeconds($rowObj['route_duration'] ?? '');
             $totals['stop_duration'] += $this->parseDurationToSeconds($rowObj['stop_duration'] ?? '');
-            
             $totals['stop_count'] += (int) ($rowObj['stop_count'] ?? 0);
-            $totals['top_speed'] += (int) ($rowObj['top_speed'] ?? 0);
+            $totals['top_speed'] = max($totals['top_speed'], (int) ($rowObj['top_speed'] ?? 0));
             $totals['overspeed_count'] += (int) ($rowObj['overspeed_count'] ?? 0);
-            
             $totals['fuel_consumption'] += (float) ($rowObj['fuel_consumption'] ?? 0);
             $totals['average_fuel'] += (float) ($rowObj['average_fuel'] ?? 0);
             $totals['fuel_cost'] += (float) ($rowObj['fuel_cost'] ?? 0);
-
             $totals['engine_work'] += $this->parseDurationToSeconds($rowObj['engine_work'] ?? '');
             $totals['engine_idle'] += $this->parseDurationToSeconds($rowObj['engine_idle'] ?? '');
-            
             $totals['odometer'] += (float) ($rowObj['odometer'] ?? 0);
             $totals['engine_hours'] += $this->parseDurationToSeconds($rowObj['engine_hours'] ?? '');
-
-            $processedRows[] = $rowObj;
         }
 
         $totalsRow = [
@@ -254,9 +247,19 @@ class GeneralInformationService
             'flag_all_day' => '-'
         ];
 
+        // Apply pagination for the returned data
+        $offset = ($page - 1) * $perPage;
+        $paginatedRows = $allRows->slice($offset, $perPage)->values();
+        
+        $lastPage = $perPage > 0 ? ceil($totalCount / $perPage) : 1;
+
         return [
-            'data' => $processedRows,
-            'totals' => $totalsRow
+            'data' => $paginatedRows,
+            'totals' => $totalsRow,
+            'total' => $totalCount,
+            'current_page' => (int) $page,
+            'last_page' => (int) $lastPage,
+            'per_page' => (int) $perPage
         ];
     }
 }

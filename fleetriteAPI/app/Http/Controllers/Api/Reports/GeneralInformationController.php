@@ -114,7 +114,9 @@ class GeneralInformationController extends Controller
 
         $dataItemsArray = $dataItems ? array_map('trim', explode(',', $dataItems)) : [];
 
-        $payload = $this->reportService->fetch($keysParam, $dataItemsArray, $id);
+        $page = $request->input('page', 1);
+        $perPage = $request->input('per_page', 10000);
+        $payload = $this->reportService->fetch($keysParam, $dataItemsArray, $page, $perPage, $id);
 
         return response()->json($payload);
     }

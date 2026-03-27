@@ -36,6 +36,7 @@ async function deploy() {
             "app/Http/Controllers/Api/Reports/GeneralInformationController.php",
             "app/Http/Controllers/Api/Reports/GeneralAccuracyController.php",
             "app/Http/Controllers/Api/Reports/GeneralMergedController.php",
+            "app/Http/Controllers/Api/Reports/TravelSheetController.php",
             "app/Models/GsUser.php",
             "app/Models/GsObject.php",
             "app/Models/GsUserObject.php",
@@ -48,6 +49,7 @@ async function deploy() {
             "app/Services/Reports/GeneralInformationService.php",
             "app/Services/Reports/GeneralAccuracyService.php",
             "app/Services/Reports/GeneralMergedService.php",
+            "app/Services/Reports/TravelSheetService.php",
             "routes/api.php",
             "config/cors.php",
             "database/migrations/2026_03_14_015203_create_reports_table.php"

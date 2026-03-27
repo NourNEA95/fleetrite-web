@@ -40,17 +40,21 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/reports/general-info/data', [\App\Http\Controllers\Api\ReportController::class, 'fetchGeneralInfoData']);
     
     // Modular Reports APIs
-    Route::post('/reports/modular/general-information/init', [\App\Http\Controllers\Api\Reports\GeneralInformationController::class, 'init']);
-    Route::post('/reports/modular/general-information/generate', [\App\Http\Controllers\Api\Reports\GeneralInformationController::class, 'generate']);
-    Route::post('/reports/modular/general-information/fetch', [\App\Http\Controllers\Api\Reports\GeneralInformationController::class, 'fetch']);
+    Route::match(['get', 'post'], '/reports/modular/general-information/init', [\App\Http\Controllers\Api\Reports\GeneralInformationController::class, 'init']);
+    Route::match(['get', 'post'], '/reports/modular/general-information/generate', [\App\Http\Controllers\Api\Reports\GeneralInformationController::class, 'generate']);
+    Route::match(['get', 'post'], '/reports/modular/general-information/fetch', [\App\Http\Controllers\Api\Reports\GeneralInformationController::class, 'fetch']);
 
-    Route::post('/reports/modular/general-accuracy/init', [\App\Http\Controllers\Api\Reports\GeneralAccuracyController::class, 'init']);
-    Route::post('/reports/modular/general-accuracy/generate', [\App\Http\Controllers\Api\Reports\GeneralAccuracyController::class, 'generate']);
-    Route::post('/reports/modular/general-accuracy/fetch', [\App\Http\Controllers\Api\Reports\GeneralAccuracyController::class, 'fetch']);
+    Route::match(['get', 'post'], '/reports/modular/general-accuracy/init', [\App\Http\Controllers\Api\Reports\GeneralAccuracyController::class, 'init']);
+    Route::match(['get', 'post'], '/reports/modular/general-accuracy/generate', [\App\Http\Controllers\Api\Reports\GeneralAccuracyController::class, 'generate']);
+    Route::match(['get', 'post'], '/reports/modular/general-accuracy/fetch', [\App\Http\Controllers\Api\Reports\GeneralAccuracyController::class, 'fetch']);
 
-    Route::post('/reports/modular/general-merged/init', [\App\Http\Controllers\Api\Reports\GeneralMergedController::class, 'init']);
-    Route::post('/reports/modular/general-merged/generate', [\App\Http\Controllers\Api\Reports\GeneralMergedController::class, 'generate']);
-    Route::post('/reports/modular/general-merged/fetch', [\App\Http\Controllers\Api\Reports\GeneralMergedController::class, 'fetch']);
+    Route::match(['get', 'post'], '/reports/modular/general-merged/init', [\App\Http\Controllers\Api\Reports\GeneralMergedController::class, 'init']);
+    Route::match(['get', 'post'], '/reports/modular/general-merged/generate', [\App\Http\Controllers\Api\Reports\GeneralMergedController::class, 'generate']);
+    Route::match(['get', 'post'], '/reports/modular/general-merged/fetch', [\App\Http\Controllers\Api\Reports\GeneralMergedController::class, 'fetch']);
+
+    Route::match(['get', 'post'], '/reports/modular/travel-sheet/init', [\App\Http\Controllers\Api\Reports\TravelSheetController::class, 'init']);
+    Route::match(['get', 'post'], '/reports/modular/travel-sheet/generate', [\App\Http\Controllers\Api\Reports\TravelSheetController::class, 'generate']);
+    Route::match(['get', 'post'], '/reports/modular/travel-sheet/fetch', [\App\Http\Controllers\Api\Reports\TravelSheetController::class, 'fetch']);
 
     Route::get('/reports/generated', [\App\Http\Controllers\Api\ReportController::class, 'indexGenerated']);
     Route::delete('/reports/generated/{id}', [\App\Http\Controllers\Api\ReportController::class, 'destroyGenerated']);

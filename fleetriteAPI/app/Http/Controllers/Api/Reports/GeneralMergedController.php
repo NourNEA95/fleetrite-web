@@ -69,7 +69,7 @@ class GeneralMergedController extends Controller
         $id = $request->input('id');
         $hashId = $request->input('hash_id');
         $page = (int) $request->input('page', 1);
-        $rows = (int) $request->input('rows', 50);
+        $perPage = (int) $request->input('per_page', 10000);
 
         // Priority: hash_id > id > keys
         if ($hashId) {
@@ -88,7 +88,7 @@ class GeneralMergedController extends Controller
             ], 400);
         }
 
-        $result = $this->service->fetchData($keys, $page, $rows, $id);
+        $result = $this->service->fetchData($keys, $page, $perPage, $id);
         return response()->json($result);
     }
 

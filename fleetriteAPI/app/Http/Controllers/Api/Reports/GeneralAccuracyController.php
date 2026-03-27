@@ -105,7 +105,7 @@ class GeneralAccuracyController extends Controller
         $id = $request->input('id');
         $hashId = $request->input('hash_id');
         $page = $request->input('page', 1);
-        $perPage = $request->input('per_page', 1000);
+        $perPage = $request->input('per_page', 10000);
 
         // Priority: hash_id > id > keys
         if ($hashId) {
