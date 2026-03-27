@@ -158,8 +158,17 @@ class GeneralInformationService
         ];
     }
 
-    public function fetch($keysParam, $dataItemsArray)
+    public function fetch($keysParam, $dataItemsArray, $id = null)
     {
+        if ($id) {
+            $generated = (array) DB::table('gs_user_reports_generated')->where('report_id', $id)->first();
+            if (!empty($generated['front_keys'])) {
+                $keysParam = $generated['front_keys'];
+            } elseif (!empty($generated['report_file'])) {
+                $keysParam = $generated['report_file'];
+            }
+        }
+
         if (is_string($keysParam)) {
             $keys = array_filter(array_map('trim', explode(',', $keysParam)));
         } else {

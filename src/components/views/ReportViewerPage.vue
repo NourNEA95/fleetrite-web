@@ -271,17 +271,20 @@ const router = useRouter();
 const reportType = computed(() => route.query.type || 'general');
 console.log('ReportViewer initialized with type:', reportType.value);
 const reportKey = computed(() => route.query.key || '');
+const reportId = computed(() => route.query.id || null);
+const hashId = computed(() => route.query.hash_id || null);
 const reportDataFromState = computed(() => history.state.reportData || []);
 
 const closePage = () => { router.back(); };
 
 // When type is general and we have a key but no data, data is loaded via paginated API
-const isGeneralKeyBased = computed(() =>
-  reportType.value &&
-  ['general', 'general_accuracy', 'general_merged'].includes(reportType.value) &&
-  reportKey.value && String(reportKey.value).trim().length > 0 &&
-  reportDataFromState.value.length === 0
-);
+const isGeneralKeyBased = computed(() => {
+  const isTypeMatch = ['general', 'general_information', 'general_accuracy', 'general_merged'].includes(reportType.value);
+  const hasIdentifier = (String(reportKey.value || '').trim().length > 0 || reportId.value || hashId.value);
+  const isDataEmpty = (reportDataFromState.value.length === 0);
+
+  return isTypeMatch && hasIdentifier && isDataEmpty;
+});
 
 const generalPaginated = ref({
   data: [],
@@ -482,15 +485,21 @@ const exportHTML = () => {
 
 // Load paginated general info data when we have key but no data
 const loadGeneralInfoPage = async (page = 1) => {
-  if (!['general', 'general_accuracy', 'general_merged'].includes(reportType.value)) return;
+  if (!['general', 'general_information', 'general_accuracy', 'general_merged'].includes(reportType.value)) return;
   const keysParam = Array.isArray(reportKey.value) ? reportKey.value.join(',') : reportKey.value;
-  if (!keysParam || !String(keysParam).trim()) return;
+  const idParam = reportId.value;
+  const hashIdParam = hashId.value;
+
+  if (!String(keysParam || '').trim() && !idParam && !hashIdParam) {
+    console.log('ReportViewer fetch aborted: No keys, id or hash_id');
+    return;
+  }
 
   generalPaginated.value.loading = true;
   try {
-    let endpoint = '/api/reports/general-info/data';
-    if (['general', 'general_accuracy', 'general_merged'].includes(reportType.value)) {
-      if (reportType.value === 'general') {
+    let endpoint = '/api/reports/paginated';
+    if (['general', 'general_information', 'general_accuracy', 'general_merged'].includes(reportType.value)) {
+      if (reportType.value === 'general' || reportType.value === 'general_information') {
         endpoint = '/api/reports/modular/general-information/fetch';
       } else if (reportType.value === 'general_accuracy') {
         endpoint = '/api/reports/modular/general-accuracy/fetch';
@@ -501,8 +510,11 @@ const loadGeneralInfoPage = async (page = 1) => {
     
     const res = await api.post(endpoint, {
       keys: keysParam,
+      id: idParam,
+      hash_id: hashId.value,
       page,
-      per_page: generalPaginated.value.per_page
+      per_page: generalPaginated.value.per_page,
+      data_items: route.query.data_items || ''
     });
     
     // The modular API returns { data: [...], totals: {...} }
@@ -533,7 +545,7 @@ onMounted(() => {
 });
 
 watch(
-  () => [reportKey.value, reportType.value],
+  () => [reportKey.value, reportType.value, hashId.value],
   () => {
     if (isGeneralKeyBased.value) {
       generalPaginated.value.data = [];

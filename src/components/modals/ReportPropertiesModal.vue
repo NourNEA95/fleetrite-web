@@ -1094,58 +1094,55 @@ const handleGenerate = async () => {
 
     if (['general', 'general_accuracy', 'general_merged'].includes(form.type)) {
       console.log('Selected modular path for:', form.type);
+      let initEndpoint = '';
+      let genEndpoint = '';
+      
       if (form.type === 'general') {
-        endpoint = '/api/reports/modular/general-information/generate';
+        initEndpoint = '/api/reports/modular/general-information/init';
+        genEndpoint = '/api/reports/modular/general-information/generate';
       } else if (form.type === 'general_accuracy') {
-        endpoint = '/api/reports/modular/general-accuracy/generate';
+        initEndpoint = '/api/reports/modular/general-accuracy/init';
+        genEndpoint = '/api/reports/modular/general-accuracy/generate';
       } else if (form.type === 'general_merged') {
-        endpoint = '/api/reports/modular/general-merged/generate';
+        initEndpoint = '/api/reports/modular/general-merged/init';
+        genEndpoint = '/api/reports/modular/general-merged/generate';
       }
       
-      // Speed optimization: Parallelize by 100 vehicles per batch
+      // 1. Initialize session
+      const initRes = await api.post(initEndpoint, { name: form.name });
+      if (initRes.data.status !== 'success') {
+        throw new Error('Failed to initialize report session');
+      }
+      const hash_id = initRes.data.hash_id;
+
+      // 2. Chunking (100 vehicles per batch)
+      const imeis = Array.isArray(form.imei) ? form.imei : (form.imei ? [form.imei] : []);
       const batchSize = 100;
       const chunks = [];
-      for (let i = 0; i < form.imei.length; i += batchSize) {
-        chunks.push(form.imei.slice(i, i + batchSize));
+      for (let i = 0; i < imeis.length; i += batchSize) {
+        chunks.push(imeis.slice(i, i + batchSize));
       }
-      
+
+      // 3. Batched generation (Parallel)
+      currentChunk.value = 0;
       totalChunks.value = chunks.length;
       
-      // Execute in parallel
-      const promises = chunks.map(async (chunk, index) => {
-        const payload = { ...basePayload, imei: chunk };
-        try {
-          const response = await api.post(endpoint, payload);
+      const promises = chunks.map(chunk => {
+        const payload = { ...basePayload, imei: chunk, hash_id };
+        return api.post(genEndpoint, payload).then(() => {
           currentChunk.value++;
           generationProgress.value = Math.round((currentChunk.value / totalChunks.value) * 100);
-          
-          if (response?.data?.status === 'success') {
-             if (response.data.keys) allKeys.push(...response.data.keys);
-             else if (response.data.key) allKeys.push(response.data.key);
-             
-             if (response.data.data) allData.push(...response.data.data);
-          }
-          return response;
-        } catch (e) {
-          console.error(`Batch ${index + 1} failed:`, e);
-          throw e;
-        }
+        });
       });
-      
+
       await Promise.all(promises);
       
-      if (allKeys.length === 0 && allData.length === 0) {
-        throw new Error('All batches failed or returned no data');
-      }
-
       showToast('Report generated successfully!');
       emit('generated', { 
-         type: form.type, 
-         data: allData,
-         keys: allKeys
+         type: form.type === 'general' ? 'general_information' : form.type, 
+         hash_id: hash_id
       });
       emit('close');
-
     } else {
       // Standard single-request generation for other types
       const response = await api.post(endpoint, basePayload);

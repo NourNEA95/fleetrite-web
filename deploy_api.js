@@ -39,6 +39,8 @@ async function deploy() {
             "app/Models/GsUser.php",
             "app/Models/GsObject.php",
             "app/Models/GsUserObject.php",
+            "app/Models/ModularReportSession.php",
+            "app/Traits/HandlesModularReportSessions.php",
             "app/Models/GsProfile.php",
             "app/Models/Report.php",
             "app/Models/GeneratedReport.php",

@@ -396,11 +396,20 @@ const showReportViewer = ref(false);
 const viewerData = reactive({ type: '', data: [], key: '' });
 
 const onReportGenerated = (payload) => {
-  const rKey = (payload.keys && payload.keys.length) ? payload.keys : (payload.key || '');
-  const keyStr = Array.isArray(rKey) ? rKey.join(',') : rKey;
+  const query = { type: payload.type };
+  
+  if (payload.report_id) {
+    query.id = payload.report_id;
+  } else if (payload.hash_id) {
+    query.hash_id = payload.hash_id;
+  } else {
+    const rKey = (payload.keys && payload.keys.length) ? payload.keys : (payload.key || '');
+    query.key = Array.isArray(rKey) ? rKey.join(',') : rKey;
+  }
+
   router.push({
     path: '/reports/viewer',
-    query: { type: payload.type, key: keyStr },
+    query: query,
     state: { reportData: payload.data || [] }
   });
   emit('close');

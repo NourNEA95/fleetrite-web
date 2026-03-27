@@ -121,8 +121,23 @@ class GeneralAccuracyService
      * @param int $perPage
      * @return array
      */
-    public function fetchData(array $keys, $page = 1, $perPage = 1000)
+    public function fetchData($keysParam, $page = 1, $perPage = 1000, $id = null)
     {
+        if ($id) {
+            $generated = (array) DB::table('gs_user_reports_generated')->where('report_id', $id)->first();
+            if (!empty($generated['front_keys'])) {
+                $keysParam = $generated['front_keys'];
+            } elseif (!empty($generated['report_file'])) {
+                $keysParam = $generated['report_file'];
+            }
+        }
+
+        if (is_string($keysParam)) {
+            $keys = array_filter(array_map('trim', explode(',', $keysParam)));
+        } else {
+            $keys = (array) $keysParam;
+        }
+
         if (empty($keys)) {
             return ['data' => [], 'totals' => null];
         }

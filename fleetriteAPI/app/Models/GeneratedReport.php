@@ -13,7 +13,7 @@ class GeneratedReport extends Model
     protected $fillable = [
         'user_id', 'dt_report', 'name', 'type', 'format',
         'objects', 'markers', 'zones', 'sensors', 'schedule',
-        'filename', 'report_file'
+        'filename', 'report_file', 'front_keys'
     ];
 
     protected $casts = [
