@@ -46,6 +46,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/reports/modular/general-accuracy/generate', [\App\Http\Controllers\Api\Reports\GeneralAccuracyController::class, 'generate']);
     Route::post('/reports/modular/general-accuracy/fetch', [\App\Http\Controllers\Api\Reports\GeneralAccuracyController::class, 'fetch']);
 
+    Route::post('/reports/modular/general-merged/generate', [\App\Http\Controllers\Api\Reports\GeneralMergedController::class, 'generate']);
+    Route::post('/reports/modular/general-merged/fetch', [\App\Http\Controllers\Api\Reports\GeneralMergedController::class, 'fetch']);
+
     Route::get('/reports/generated', [\App\Http\Controllers\Api\ReportController::class, 'indexGenerated']);
     Route::delete('/reports/generated/{id}', [\App\Http\Controllers\Api\ReportController::class, 'destroyGenerated']);
 });

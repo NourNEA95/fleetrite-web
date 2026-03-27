@@ -71,7 +71,7 @@
                   <th>{{ t('stop_duration') }}</th>
                   <th>{{ t('stop_count') }}</th>
                   <th>{{ t('top_speed') }}</th>
-                  <th>{{ reportType === 'general_accuracy' ? t('speed_limit') : t('avg_speed') }}</th>
+                  <th>{{ ['general_accuracy', 'general_merged'].includes(reportType) ? t('speed_limit') : t('avg_speed') }}</th>
                   <th>{{ t('overspeed_count') }}</th>
                   <th>{{ t('fuel_consumption') }}</th>
                   <th>{{ t('avg_fuel') }}</th>
@@ -122,7 +122,7 @@
                     <td class="text-right">{{ formatDuration(row.stop_duration) }}</td>
                     <td class="text-center">{{ row.stop_count }}</td>
                     <td class="text-right">{{ row.top_speed }} km/h</td>
-                    <td class="text-right">{{ reportType === 'general_accuracy' ? (row.average_speed || row.avg_speed || '80') : (row.avg_speed || '0') }}</td>
+                    <td class="text-right">{{ ['general_accuracy', 'general_merged'].includes(reportType) ? (row.average_speed || row.avg_speed || '80') : (row.avg_speed || '0') }}</td>
                     <td class="text-center" :class="{ 'danger-text': row.overspeed_count > 0 }">{{ row.overspeed_count }}</td>
                     <td class="text-right">{{ row.fuel_consumption }} L</td>
                     <td class="text-right">{{ row.average_fuel || '0' }} L/100km</td>
@@ -171,7 +171,7 @@
                     <td class="text-right">{{ formatDuration(globalTotalRow.stop_duration) }}</td>
                     <td class="text-center">{{ globalTotalRow.stop_count }}</td>
                     <td class="text-right">{{ globalTotalRow.top_speed }} km/h</td>
-                    <td class="text-right">-</td>
+                    <td class="text-right">{{ ['general_accuracy', 'general_merged'].includes(reportType) ? (globalTotalRow.speed_limit || '-') : '-' }}</td>
                     <td class="text-center">{{ globalTotalRow.overspeed_count }}</td>
                     <td class="text-right">{{ cleanValue(globalTotalRow.fuel_consumption) }} L</td>
                     <td class="text-right">{{ cleanValue(globalTotalRow.average_fuel) }} L/100km</td>
@@ -278,7 +278,7 @@ const closePage = () => { router.back(); };
 // When type is general and we have a key but no data, data is loaded via paginated API
 const isGeneralKeyBased = computed(() =>
   reportType.value &&
-  ['general', 'general_accuracy'].includes(reportType.value) &&
+  ['general', 'general_accuracy', 'general_merged'].includes(reportType.value) &&
   reportKey.value && String(reportKey.value).trim().length > 0 &&
   reportDataFromState.value.length === 0
 );
@@ -482,15 +482,21 @@ const exportHTML = () => {
 
 // Load paginated general info data when we have key but no data
 const loadGeneralInfoPage = async (page = 1) => {
-  if (!['general', 'general_accuracy'].includes(reportType.value)) return;
+  if (!['general', 'general_accuracy', 'general_merged'].includes(reportType.value)) return;
   const keysParam = Array.isArray(reportKey.value) ? reportKey.value.join(',') : reportKey.value;
   if (!keysParam || !String(keysParam).trim()) return;
 
   generalPaginated.value.loading = true;
   try {
     let endpoint = '/api/reports/general-info/data';
-    if (['general', 'general_accuracy'].includes(reportType.value)) {
-      endpoint = reportType.value === 'general' ? '/api/reports/modular/general-information/fetch' : '/api/reports/modular/general-accuracy/fetch';
+    if (['general', 'general_accuracy', 'general_merged'].includes(reportType.value)) {
+      if (reportType.value === 'general') {
+        endpoint = '/api/reports/modular/general-information/fetch';
+      } else if (reportType.value === 'general_accuracy') {
+        endpoint = '/api/reports/modular/general-accuracy/fetch';
+      } else if (reportType.value === 'general_merged') {
+        endpoint = '/api/reports/modular/general-merged/fetch';
+      }
     }
     
     const res = await api.post(endpoint, {
@@ -500,7 +506,7 @@ const loadGeneralInfoPage = async (page = 1) => {
     });
     
     // The modular API returns { data: [...], totals: {...} }
-    if (['general', 'general_accuracy'].includes(reportType.value)) {
+    if (['general', 'general_accuracy', 'general_merged'].includes(reportType.value)) {
       generalPaginated.value.data = res.data.data || [];
       generalPaginated.value.totals_row = res.data.totals || null;
       generalPaginated.value.current_page = 1;

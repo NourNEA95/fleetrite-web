@@ -1094,7 +1094,13 @@ const handleGenerate = async () => {
 
     if (['general', 'general_accuracy', 'general_merged'].includes(form.type)) {
       console.log('Selected modular path for:', form.type);
-      endpoint = form.type === 'general' ? '/api/reports/modular/general-information/generate' : '/api/reports/modular/general-accuracy/generate';
+      if (form.type === 'general') {
+        endpoint = '/api/reports/modular/general-information/generate';
+      } else if (form.type === 'general_accuracy') {
+        endpoint = '/api/reports/modular/general-accuracy/generate';
+      } else if (form.type === 'general_merged') {
+        endpoint = '/api/reports/modular/general-merged/generate';
+      }
       
       // Speed optimization: Parallelize by 100 vehicles per batch
       const batchSize = 100;
