@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\TrackingController;
 use App\Http\Controllers\Api\HistoryController;
+use App\Http\Controllers\Api\MessagesController;
 use App\Http\Controllers\Api\EventController;
 use App\Http\Controllers\Api\DashboardController;
 use Illuminate\Support\Facades\Route;
@@ -15,8 +16,15 @@ Route::middleware('auth:sanctum')->group(function () {
     // Tracking APIs
     Route::get('/tracking/objects', [TrackingController::class, 'getObjects']);
     
+    // Grid APIs (Isolated)
+    Route::get('/grid/details/{imei}', [\App\Http\Controllers\Api\GridController::class, 'getDetails']);
+    
     // History APIs
     Route::get('/history/{imei}', [HistoryController::class, 'getRoute']);
+
+    // Messages APIs
+    Route::get('/messages/{imei}', [HistoryController::class, 'getMessages']);
+    Route::post('/messages/{imei}/delete', [HistoryController::class, 'deleteMessages']);
 
     // Event APIs
     Route::get('/events', [EventController::class, 'getEvents']);

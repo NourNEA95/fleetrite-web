@@ -52,10 +52,16 @@
 
       <!-- Body -->
         <div class="modal-body custom-scrollbar">
-          <!-- Report Header Title (Centered like the screenshot) -->
-          <div class="report-header-title">
-            <h3>{{ reportTypeDisplayName }}</h3>
-          </div>
+          <!-- Highly Specialized/Dedicated View for Drives Stops Sensors -->
+          <template v-if="reportType === 'drives_stops_sensors' && reportDataFromState">
+            <DrivesStopsSensorsView :reportData="reportDataFromState" :t="t" />
+          </template>
+
+          <!-- Original Generic/Modular View for all other reports -->
+          <template v-else>
+            <div class="report-header-title">
+              <h3>{{ reportTypeDisplayName }}</h3>
+            </div>
 
           <!-- Professional Data Table -->
           <div class="table-container shadow-sm">
@@ -84,18 +90,42 @@
                   <th>{{ t('trailer') }}</th>
                 </tr>
                 <tr v-else-if="reportType === 'drives_stops'">
-                  <th class="sticky-col">{{ t('status') }}</th>
-                  <th>{{ t('start') }}</th>
-                  <th>{{ t('end') }}</th>
-                  <th>{{ t('duration') }}</th>
-                  <th>{{ t('length') }}</th>
-                  <th>{{ t('top_speed') }}</th>
-                  <th>{{ t('avg_speed') }}</th>
-                  <th>{{ t('fuel_consumption') }}</th>
-                  <th>{{ t('engine_idle') }}</th>
-                  <th>{{ t('driver') }}</th>
+                   <th class="sticky-col">#</th>
+                   <th>{{ t('status') }}</th>
+                   <th>{{ t('start') }}</th>
+                   <th>{{ t('end') }}</th>
+                   <th>{{ t('duration') }}</th>
+                   <th>{{ t('distance_travelled_km') }}</th>
+                   <th>{{ t('top_speed') }}</th>
+                   <th>{{ t('avg_speed') }}</th>
+                   <th>{{ t('fuel_consumption') }}</th>
+                   <th>{{ t('avg_fuel_cons_mpg') }}</th>
+                   <th>{{ t('fuel_cost') }}</th>
+                   <th>{{ t('engine_idle') }}</th>
+                   <th>{{ t('driver') }}</th>
+                   <th>{{ t('trailer') }}</th>
                 </tr>
-                <tr v-else-if="reportType === 'travel_sheet'">
+                <tr v-else-if="reportType === 'driver_travel_sheet'">
+                  <th class="sticky-col">#</th>
+                  <th>{{ t('driver') }}</th>
+                  <th>{{ t('group') }}</th>
+                  <th>{{ t('object') }}</th>
+                  <th>{{ t('start_time') }}</th>
+                  <th>{{ t('departed_from') }}</th>
+                  <th>{{ t('start_odometer') }}</th>
+                  <th>{{ t('end_time') }}</th>
+                  <th>{{ t('arrived_at') }}</th>
+                  <th>{{ t('end_odometer') }}</th>
+                  <th>{{ t('max_speed') }}</th>
+                  <th>{{ t('duration') }}</th>
+                  <th>{{ t('stop_duration') }}</th>
+                  <th>{{ t('distance_travelled_km') }}</th>
+                  <th>{{ t('fuel_consumption') }}</th>
+                  <th>{{ t('avg_fuel_cons_100_km') }}</th>
+                  <th>{{ t('fuel_cost') }}</th>
+                  <th>{{ t('trailer') }}</th>
+                </tr>
+                <tr v-else-if="['travel_sheet', 'travel_sheet_dn'].includes(reportType)">
                   <th class="sticky-col">#</th>
                   <th>{{ t('object') }}</th>
                   <th>{{ t('group') }}</th>
@@ -114,9 +144,59 @@
                   <th>{{ t('driver') }}</th>
                   <th>{{ t('trailer') }}</th>
                 </tr>
-                <!-- Special Header for Dynamic Route Sensors -->
+                 <!-- Special Header for KOC Directorate -->
+                  <tr v-else-if="reportType === 'overspeednew'">
+                    <th class="sticky-col">#</th>
+                    <th>{{ t('group') }}</th>
+                    <th>{{ t('start') }}</th>
+                    <th>{{ t('imei') }}</th>
+                    <th style="min-width: 300px">{{ t('location') }}</th>
+                    <th>{{ t('heading') }}</th>
+                    <th>{{ t('recorded_speed') }}</th>
+                    <th>{{ t('speed_limit') }}</th>
+                    <th>{{ t('start_time') }}</th>
+                    <th>{{ t('end_time') }}</th>
+                    <th>{{ t('speed') }}</th>
+                    <th>{{ t('os_duration') }}</th>
+                    <th>{{ t('os_distance') }}</th>
+                    <th>{{ t('seat_belt') }}</th>
+                    <th>{{ t('tamper') }}</th>
+                    <th>{{ t('violations') }}</th>
+                    <th>{{ t('remarks') }}</th>
+                 </tr>
+
+                 <!-- Special Header for KOC Directorate Summary -->
+                 <tr v-else-if="reportType === 'overspeednew2'">
+                    <th class="sticky-col">#</th>
+                    <th>{{ t('plate_number') }}</th>
+                    <th style="min-width: 250px">{{ t('location') }}</th>
+                    <th>{{ t('vehicle_heading') }}</th>
+                    <th>{{ t('recorded_speed') }}</th>
+                    <th>{{ t('allowed_speed_limit') }}</th>
+                    <th>{{ t('start_time') }}</th>
+                    <th>{{ t('end_time') }}</th>
+                    <th>{{ t('os_duration') }}</th>
+                    <th>{{ t('os_distance') }}</th>
+                    <th>{{ t('seat_belt') }}</th>
+                    <th>{{ t('tamper') }}</th>
+                    <th>{{ t('harsh_accel') }}</th>
+                    <th>{{ t('harsh_brak') }}</th>
+                    <th>{{ t('harsh_corn') }}</th>
+                    <th>{{ t('os_count') }}</th>
+                    <th>{{ t('total_violation') }}</th>
+                 </tr>
+
+                 <!-- Dynamic Header for Object Information -->
+                 <tr v-else-if="reportType === 'object_info'">
+                    <th class="sticky-col">#</th>
+                    <th v-for="(header, hIdx) in (reportDataFromState?.headers || [])" :key="hIdx">
+                      {{ header }}
+                    </th>
+                  </tr>
+
+                 <!-- Special Header for Dynamic Route Sensors -->
                  <tr v-else-if="reportType === 'route_data_sensors'" align="center" style="background-color:#0b1eaa;">
-                   <th v-for="(lab, index) in (safeReportData[0]?.labels || [])" :key="index">
+                   <th v-for="(lab, index) in sensorLabels" :key="index">
                       {{ lab }}
                    </th>
                  </tr>
@@ -140,8 +220,8 @@
                     <td class="text-right">{{ formatDuration(row.route_duration) }}</td>
                     <td class="text-right">{{ formatDuration(row.stop_duration) }}</td>
                     <td class="text-center">{{ row.stop_count }}</td>
-                    <td class="text-right">{{ row.top_speed }} km/h</td>
-                    <td class="text-right">{{ ['general_accuracy', 'general_merged'].includes(reportType) ? (row.average_speed || row.avg_speed || '80') : (row.avg_speed || '0') }}</td>
+                    <td class="text-right">{{ formatSpeed(row.top_speed) }} km/h</td>
+                    <td class="text-right">{{ ['general_accuracy', 'general_merged'].includes(reportType) ? formatSpeed(row.average_speed || row.avg_speed || '80') : formatSpeed(row.avg_speed || '0') }}</td>
                     <td class="text-center" :class="{ 'danger-text': row.overspeed_count > 0 }">{{ row.overspeed_count }}</td>
                     <td class="text-right">{{ row.fuel_consumption }} L</td>
                     <td class="text-right">{{ row.average_fuel || '0' }} L/100km</td>
@@ -155,19 +235,19 @@
                   </tr>
                 </template>
                 
-                <template v-else-if="reportType === 'travel_sheet'">
+                <template v-else-if="['travel_sheet', 'travel_sheet_dn'].includes(reportType)">
                   <template v-for="(group, gIdx) in tableRowsGrouped" :key="gIdx">
                     <tr class="imei-header-row">
                       <td colspan="17" class="text-center font-bold bg-light-blue py-2">
                         {{ group.object || group.imei }} ({{ group.imei }})
                       </td>
                     </tr>
-                    <tr v-for="(row, idx) in group.rows" :key="idx" class="table-row">
-                      <td class="sticky-col font-bold">{{ idx + 1 }}</td>
+                    <tr v-for="(row, idx) in group.rows" :key="idx" class="table-row" :class="{ 'global-total-row': row.is_total }">
+                      <td class="sticky-col font-bold">{{ row.is_total ? '' : idx + 1 }}</td>
                       <td>{{ row.object || row.imei }}</td>
                       <td>{{ row.group || 'No Group' }}</td>
                       <td>{{ row.start_time }}</td>
-                      <td>{{ row.departed_from }}</td>
+                      <td :class="{ 'font-bold': row.is_total }">{{ row.departed_from }}</td>
                       <td>{{ row.start_odometer }}</td>
                       <td>{{ row.end_time }}</td>
                       <td>{{ row.arrived_at }}</td>
@@ -183,25 +263,128 @@
                     </tr>
                   </template>
                 </template>
-                <template v-else-if="reportType === 'drives_stops'">
+                <template v-else-if="reportType === 'driver_travel_sheet'">
                   <tr v-for="(row, idx) in tableRows" :key="idx" class="table-row">
-                    <td>
-                      <div :class="['status-chip', row.status === 'drive' ? 'drive' : 'stop']">
-                        {{ t(row.status) }}
-                      </div>
-                    </td>
-                    <td>{{ row.start }}</td>
-                    <td>{{ row.end }}</td>
+                    <td class="sticky-col font-bold">{{ idx + 1 }}</td>
+                    <td>{{ row.driver }}</td>
+                    <td>{{ row.group || 'No Group' }}</td>
+                    <td>{{ row.object || row.imei }}</td>
+                    <td>{{ row.start_time }}</td>
+                    <td>{{ row.departed_from }}</td>
+                    <td>{{ row.start_odometer }}</td>
+                    <td>{{ row.end_time }}</td>
+                    <td>{{ row.arrived_at }}</td>
+                    <td>{{ row.end_odometer }}</td>
+                    <td>{{ formatSpeed(row.max_speed || row.top_speed || '0') }}</td>
                     <td class="text-right">{{ formatDuration(row.duration) }}</td>
-                    <td :class="row.status === 'stop' ? 'text-left font-medium' : 'text-right'" :style="row.status === 'stop' ? 'min-width: 300px; white-space: normal;' : ''">
-                      {{ row.length }}{{ (row.status === 'drive' && row.length) ? ' km' : '' }}
-                    </td>
-                    <td class="text-right">{{ row.top_speed }}{{ row.top_speed ? ' km/h' : '' }}</td>
-                    <td class="text-right">{{ row.avg_speed }}{{ row.avg_speed ? ' km/h' : '' }}</td>
-                    <td class="text-right">{{ row.fuel_consumption || '0' }} L</td>
-                    <td class="text-right">{{ formatDuration(row.engine_idle) }}</td>
-                    <td>{{ row.driver || 'n/a' }}</td>
+                    <td class="text-right">{{ formatDuration(row.stop_duration) }}</td>
+                    <td class="text-right">{{ row.distance_travelled }}</td>
+                    <td class="text-right">{{ row.fuel_consumption }}</td>
+                    <td class="text-right">{{ row.avg_fuel_consumption }}</td>
+                    <td class="text-right">{{ row.fuel_cost }}</td>
+                    <td>{{ row.trailer || 'n/a' }}</td>
                   </tr>
+                </template>
+
+                <template v-else-if="reportType === 'overspeednew2'">
+                  <tr v-for="(row, idx) in tableRows" :key="idx" class="table-row">
+                    <td class="sticky-col font-bold">{{ idx + 1 }}</td>
+                    <td>{{ row.plate_number }}</td>
+                    <td class="text-left" style="font-size: 11px">{{ row.location }}</td>
+                    <td>{{ row.heading }}</td>
+                    <td>{{ row.recorded_speed }} km/h</td>
+                    <td>{{ row.speed_limit }} km/h</td>
+                    <td>{{ row.start_time }}</td>
+                    <td>{{ row.end_time }}</td>
+                    <td>{{ row.os_duration }}</td>
+                    <td>{{ row.os_distance }}</td>
+                    <td>{{ row.seat_belt }}</td>
+                    <td>{{ row.tamper }}</td>
+                    <td>{{ row.harsh_accel }}</td>
+                    <td>{{ row.harsh_brak }}</td>
+                    <td>{{ row.harsh_corn }}</td>
+                    <td>{{ row.os_count }}</td>
+                    <td>{{ row.total_violation }}</td>
+                  </tr>
+                </template>
+
+                <template v-else-if="reportType === 'object_info'">
+                  <tr v-for="(row, idx) in (reportDataFromState?.rows || [])" :key="idx" class="table-row">
+                    <td class="sticky-col font-bold">{{ idx + 1 }}</td>
+                    <td v-for="(val, vIdx) in row" :key="vIdx" v-html="val">
+                    </td>
+                  </tr>
+                </template>
+
+                <template v-else-if="reportType === 'overspeednew'">
+                  <template v-for="(group, gIdx) in tableRowsGrouped" :key="gIdx">
+                    <tr class="imei-header-row">
+                      <td colspan="17" class="text-center font-bold bg-light-blue py-2">
+                        {{ group.rows[0]?.imei || group.imei }}
+                      </td>
+                    </tr>
+                    <tr v-for="(row, idx) in group.rows" :key="idx" class="table-row">
+                      <td class="sticky-col font-bold">{{ idx + 1 }}</td>
+                      <td>{{ row.group }}</td>
+                      <td>{{ row.start }}</td>
+                      <td>{{ row.imei }}</td>
+                      <td class="text-left" style="font-size: 11px">{{ row.location }}</td>
+                      <td>{{ row.heading }}</td>
+                      <td>{{ row.recorded_speed }} km/h</td>
+                      <td>{{ row.speed_limit }} km/h</td>
+                      <td>{{ row.start_time }}</td>
+                      <td>{{ row.end_time }}</td>
+                      <td>{{ row.speed }} km/h</td>
+                      <td>{{ row.os_duration }} s</td>
+                      <td>{{ row.os_distance }} km</td>
+                      <td>{{ row.seat_belt }}</td>
+                      <td>{{ row.tamper }}</td>
+                      <td>{{ row.violations }}</td>
+                      <td>{{ row.remarks }}</td>
+                    </tr>
+                  </template>
+                </template>
+                <template v-else-if="reportType === 'drives_stops'">
+                  <template v-for="(group, gIdx) in tableRowsGrouped" :key="gIdx">
+                    <tr class="imei-header-row">
+                      <td colspan="14" class="text-center font-bold bg-light-blue py-2">
+                        {{ group.object || group.imei }} ({{ group.imei }})
+                      </td>
+                    </tr>
+                    <tr v-for="(row, idx) in group.rows" :key="idx" class="table-row" :class="{ 'global-total-row': row.is_total }">
+                      <td class="sticky-col font-bold">{{ row.is_total ? '' : idx + 1 }}</td>
+                      <td>
+                        <div v-if="row.is_total" class="font-bold">TOTAL</div>
+                        <div v-else :class="['status-chip', (row.status === 'drive' || row.status === 'Moving' || row.status === 'تحرك') ? 'drive' : 'stop']">
+                          {{ row.status }}
+                        </div>
+                      </td>
+                      <td>{{ row.start }}</td>
+                      <td>{{ row.end }}</td>
+                      <td class="text-right">{{ formatDuration(row.duration) }}</td>
+                      
+                      <!-- Distance / Stop Position -->
+                      <template v-if="row.status === 'Stopped' || row.status === 'متوقف'">
+                        <td class="text-left font-medium" style="min-width: 300px; white-space: normal; color: #595bd4;">
+                          {{ row.stop_position }}
+                        </td>
+                        <td class="text-right">-</td>
+                        <td class="text-right">-</td>
+                      </template>
+                      <template v-else>
+                        <td class="text-right">{{ (row.distance && row.distance != '-') ? row.distance + ' km' : '-' }}</td>
+                        <td class="text-right">{{ (row.top_speed && row.top_speed != '-') ? formatSpeed(row.top_speed) + ' km/h' : '-' }}</td>
+                        <td class="text-right">{{ (row.avg_speed && row.avg_speed != '-') ? formatSpeed(row.avg_speed) + ' km/h' : '-' }}</td>
+                      </template>
+
+                      <td class="text-right">{{ (row.fuel_consumption && row.fuel_consumption != '0') ? row.fuel_consumption + ' L' : '-' }}</td>
+                      <td class="text-right">{{ (row.avg_fuel_consumption && row.avg_fuel_consumption != '-') ? row.avg_fuel_consumption : '-' }}</td>
+                      <td class="text-right">{{ row.fuel_cost || '0' }}</td>
+                      <td class="text-right">{{ formatDuration(row.engine_idle) }}</td>
+                      <td>{{ row.driver || 'n/a' }}</td>
+                      <td>{{ row.trailer || 'n/a' }}</td>
+                    </tr>
+                  </template>
                 </template>
               </tbody>
 
@@ -217,7 +400,7 @@
                     <td class="text-right">{{ formatDuration(globalTotalRow.route_duration) }}</td>
                     <td class="text-right">{{ formatDuration(globalTotalRow.stop_duration) }}</td>
                     <td class="text-center">{{ globalTotalRow.stop_count }}</td>
-                    <td class="text-right">{{ globalTotalRow.top_speed }} km/h</td>
+                    <td class="text-right">{{ formatSpeed(globalTotalRow.top_speed) }} km/h</td>
                     <td class="text-right">{{ ['general_accuracy', 'general_merged'].includes(reportType) ? (globalTotalRow.speed_limit || '-') : '-' }}</td>
                     <td class="text-center">{{ globalTotalRow.overspeed_count }}</td>
                     <td class="text-right">{{ cleanValue(globalTotalRow.fuel_consumption) }} L</td>
@@ -242,14 +425,15 @@
                       <div class="text-xs opacity-75">Stop: {{ formatDuration(globalTotalRow.stop_duration) }}</div>
                       {{ globalTotalRow.length }} km
                     </td>
-                    <td class="text-right">{{ globalTotalRow.top_speed }} km/h</td>
-                    <td class="text-right">{{ globalTotalRow.avg_speed }} km/h</td>
+                    <td class="text-right">{{ formatSpeed(globalTotalRow.top_speed) }} km/h</td>
+                    <td class="text-right">{{ formatSpeed(globalTotalRow.avg_speed) }} km/h</td>
                     <td class="text-right">{{ cleanValue(globalTotalRow.fuel_consumption) }} L</td>
                     <td class="text-right">-</td>
                     <td>-</td>
                   </tr>
               </tfoot>
             </table>
+          </div>
             
             <div v-if="generalPaginated.loading" class="empty-state">
               <div class="loading-spinner"></div>
@@ -299,14 +483,15 @@
                 </div>
               </div>
             </div>
-          </div>
-      </div>
+          </template>
+        </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
+import DrivesStopsSensorsView from './reports/DrivesStopsSensorsView.vue';
 import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -316,22 +501,25 @@ import { useRoute, useRouter } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
 const reportType = computed(() => route.query.type || 'general');
-console.log('ReportViewer initialized with type:', reportType.value);
+console.log('ReportViewer initialized with type:', reportType.value, 'VERSION: 1.0.5');
 const reportKey = computed(() => route.query.key || '');
 const reportId = computed(() => route.query.id || null);
 const hashId = computed(() => route.query.hash_id || null);
-const reportDataFromState = computed(() => history.state.reportData || []);
+const reportDataFromState = computed(() => history.state.reportData || null);
 
 const closePage = () => { router.back(); };
 
 // When type is general and we have a key but no data, data is loaded via paginated API
 const isGeneralKeyBased = computed(() => {
-  const isTypeMatch = ['general', 'general_information', 'general_accuracy', 'general_merged', 'travel_sheet'].includes(reportType.value);
+  if (['object_info', 'drives_stops_sensors'].includes(reportType.value)) return false; // Handled directly
+  const isTypeMatch = ['general', 'general_information', 'general_accuracy', 'general_merged', 'travel_sheet', 'travel_sheet_dn', 'driver_travel_sheet', 'route_data_sensors', 'drives_stops', 'overspeednew', 'overspeednew2'].includes(reportType.value);
   const hasIdentifier = (String(reportKey.value || '').trim().length > 0 || reportId.value || hashId.value);
-  const isDataEmpty = (reportDataFromState.value.length === 0);
+  const isDataEmpty = (!reportDataFromState.value || (Array.isArray(reportDataFromState.value) && reportDataFromState.value.length === 0));
 
   return isTypeMatch && hasIdentifier && isDataEmpty;
 });
+
+const sensorLabels = ref([]);
 
 const generalPaginated = ref({
   data: [],
@@ -347,6 +535,9 @@ const generalPaginated = ref({
 const safeReportData = computed(() => {
   if (isGeneralKeyBased.value && generalPaginated.value.data.length) {
     return generalPaginated.value.data;
+  }
+  if (['object_info', 'drives_stops_sensors'].includes(reportType.value)) {
+    return reportDataFromState.value?.rows || [];
   }
   return Array.isArray(reportDataFromState.value) ? reportDataFromState.value : [];
 });
@@ -389,13 +580,45 @@ const translations = {
     general_merged: 'General Information (Merged)',
     general_accuracy: 'General Accuracy',
     travel_sheet: 'Travel Sheet',
+    travel_sheet_dn: 'Travel Sheet (Day/Night)',
+    driver_travel_sheet: 'Driver Travels',
     time_a: 'TIME A',
     position_a: 'POSITION A',
     odometer_a: 'ODOMETER A',
     time_b: 'TIME B',
     position_b: 'POSITION B',
     odometer_b: 'ODOMETER B',
-    max_speed: 'MAX SPEED'
+    max_speed: 'MAX SPEED',
+    start_time: 'START TIME',
+    departed_from: 'DEPARTED FROM',
+    start_odometer: 'START ODOMETER',
+    end_time: 'END TIME',
+    arrived_at: 'ARRIVED AT',
+    end_odometer: 'END ODOMETER',
+    distance_travelled_km: 'DISTANCE TRAVELLED KM',
+    avg_fuel_cons_100_km: 'AVG. FUEL CONS. (100 KM)',
+    overspeednew: 'KOC Directorate Report',
+    recorded_speed: 'RECORDED SPEED',
+    os_duration: 'OVERSPEED DURATION',
+    os_distance: 'OVERSPEED DISTANCE',
+    seat_belt: 'SEAT BELT',
+    tamper: 'TAMPER',
+    violations: 'VIOLATIONS',
+    remarks: 'REMARKS',
+    heading: 'HEADING',
+    plate_number: 'PLATE NUMBER',
+    imei: 'IMEI',
+    vehicle_heading: 'VEHICLE HEADING DIRECTION',
+    allowed_speed_limit: 'ALLOWED SPEED LIMIT',
+    harsh_accel: 'HARSH ACCELERATION',
+    harsh_brak: 'HARSH BRAKING',
+    harsh_corn: 'HARSH CORNERING',
+    os_count: 'OVERSPEED COUNT',
+    total_violation: 'TOTAL NO. OF VIOLATION',
+    object_info: 'Object Information',
+    report_summary: 'Report Summary',
+    drives_stops_sensors: 'Drives and stops with sensors',
+    stop_position: 'Stop position',
   },
   ar: {
     report_results: 'نتائج التقرير',
@@ -432,13 +655,41 @@ const translations = {
     general_merged: 'معلومات عامة (مدمج)',
     general_accuracy: 'دقة المعلومات العامة',
     travel_sheet: 'تقرير الرحلات المجمع',
+    travel_sheet_dn: 'تقرير الرحلات (يومي/ليلي)',
+    driver_travel_sheet: 'رحلات السائقين',
     time_a: 'وقت البداية',
     position_a: 'مكان التحرك',
     odometer_a: 'عداد البداية',
     time_b: 'وقت النهاية',
     position_b: 'مكان الوصول',
     odometer_b: 'عداد النهاية',
-    max_speed: 'أقصى سرعة'
+    max_speed: 'أقصى سرعة',
+    start_time: 'وقت البداية',
+    departed_from: 'مكان التحرك',
+    start_odometer: 'عداد البداية',
+    end_time: 'وقت النهاية',
+    arrived_at: 'مكان الوصول',
+    end_odometer: 'عداد النهاية',
+    distance_travelled_km: 'المسافة المقطوعة كم',
+    avg_fuel_cons_100_km: 'متوسط استهلاك الوقود (100 كم)',
+    overspeednew: 'تقرير مديرية KOC',
+    plate_number: 'رقم اللوحة',
+    recorded_speed: 'السرعة المسجلة',
+    os_duration: 'مدة تجاوز السرعة',
+    os_distance: 'مسافة تجاوز السرعة',
+    seat_belt: 'حزام الأمان',
+    tamper: 'إشارة التلاعب',
+    violations: 'إجمالي المخالفات',
+    remarks: 'ملاحظات القيادة العنيفة',
+    heading: 'الاتجاه',
+    imei: 'رقم الجهاز (IMEI)',
+    vehicle_heading: 'اتجاه حركة المركبة',
+    allowed_speed_limit: 'حد السرعة المسموح به',
+    harsh_accel: 'تسارع عنيف',
+    harsh_brak: 'فرملة عنيفة',
+    harsh_corn: 'انعطاف عنيف',
+    os_count: 'عدد مرات تجاوز السرعة',
+    total_violation: 'إجمالي رقم المخالفات',
   }
 };
 
@@ -488,16 +739,21 @@ const globalTotalRow = computed(() => {
 // Filter out Total row from main table body (since we use tfoot)
 const tableRows = computed(() => {
     if (!Array.isArray(safeReportData.value)) return [];
-    return safeReportData.value.filter(r => 
-        !r.is_total && 
+    return safeReportData.value.filter(r => {
+        // Don't filter out totals for travel sheets as they are per-vehicle
+        if (['travel_sheet', 'travel_sheet_dn', 'drives_stops'].includes(reportType.value)) {
+            return !r.is_header; // Skip header rows as grouped generator adds them
+        }
+        
+        return !r.is_total && 
         r.is_total !== 1 && 
         r.is_total !== 'true' && 
-        !(r.object && r.object.toString().startsWith('Total:'))
-    );
+        !(r.object && r.object.toString().startsWith('Total:'));
+    });
 });
 
 const tableRowsGrouped = computed(() => {
-  if (reportType.value !== 'travel_sheet') return [];
+  if (!['travel_sheet', 'travel_sheet_dn', 'driver_travel_sheet', 'drives_stops', 'overspeednew'].includes(reportType.value)) return [];
   const groups = [];
   let currentGroup = null;
   tableRows.value.forEach(row => {
@@ -514,6 +770,12 @@ const tableRowsGrouped = computed(() => {
 const cleanValue = (val) => {
     if (val === undefined || val === null) return '';
     return val.toString().replace(/[a-zA-Z\s]/g, '').trim();
+};
+
+const formatSpeed = (val) => {
+  if (val === undefined || val === null || val === '') return '0';
+  const num = parseFloat(cleanValue(val));
+  return isNaN(num) ? '0' : Math.round(num).toString();
 };
 
 const totalDistance = computed(() => {
@@ -562,7 +824,8 @@ const exportHTML = () => {
 
 // Load paginated general info data when we have key but no data
 const loadGeneralInfoPage = async (page = 1) => {
-  if (!['general', 'general_information', 'general_accuracy', 'general_merged', 'travel_sheet'].includes(reportType.value)) return;
+  if (['object_info', 'drives_stops_sensors'].includes(reportType.value)) return;
+  if (!['general', 'general_information', 'general_accuracy', 'general_merged', 'travel_sheet', 'travel_sheet_dn', 'driver_travel_sheet', 'route_data_sensors', 'drives_stops', 'overspeednew', 'overspeednew2'].includes(reportType.value)) return;
   const keysParam = Array.isArray(reportKey.value) ? reportKey.value.join(',') : reportKey.value;
   const idParam = reportId.value;
   const hashIdParam = hashId.value;
@@ -573,42 +836,55 @@ const loadGeneralInfoPage = async (page = 1) => {
   }
 
   generalPaginated.value.loading = true;
+  console.log('Fetching data for type:', reportType.value, 'id:', idParam, 'hash:', hashIdParam, 'VERSION: 1.1.0_FORCE_RELOAD');
   try {
-    let endpoint = '/api/reports/paginated';
-    if (['general', 'general_information', 'general_accuracy', 'general_merged', 'travel_sheet'].includes(reportType.value)) {
-      if (reportType.value === 'general' || reportType.value === 'general_information') {
-        endpoint = '/api/reports/modular/general-information/fetch';
-      } else if (reportType.value === 'general_accuracy') {
-        endpoint = '/api/reports/modular/general-accuracy/fetch';
-      } else if (reportType.value === 'general_merged') {
-        endpoint = '/api/reports/modular/general-merged/fetch';
-      } else if (reportType.value === 'travel_sheet') {
-        endpoint = '/api/reports/modular/travel-sheet/fetch';
-      }
-    }
+    const modularEndpoints = {
+      'general': '/api/reports/modular/general-information/fetch',
+      'general_information': '/api/reports/modular/general-information/fetch',
+      'general_accuracy': '/api/reports/modular/general_accuracy/fetch',
+      'general_merged': '/api/reports/modular/general-merged/fetch',
+      'travel_sheet': '/api/reports/modular/travel-sheet/fetch',
+      'travel_sheet_dn': '/api/reports/travel-sheet-dn/fetch',
+      'driver_travel_sheet': '/api/reports/modular/driver-travels/fetch',
+      'drives_stops': '/api/reports/modular/drives-stops/fetch',
+      'route_data_sensors': '/api/reports/modular/route-data-sensors/fetch',
+      'overspeednew': '/api/reports/modular/koc-directorate/fetch',
+      'overspeednew2': '/api/reports/modular/koc-summary/fetch'
+    };
     
+    const endpoint = modularEndpoints[reportType.value] || '/api/reports/paginated';
+    console.log('Final endpoint determined:', endpoint);
+
     const res = await api.post(endpoint, {
       keys: keysParam,
       id: idParam,
       hash_id: hashId.value,
       page,
       per_page: generalPaginated.value.per_page,
-      data_items: route.query.data_items || ''
+      data_items: route.query.data_items || '',
+      drivers: route.query.driver_ids || ''
     });
     
     // The modular API returns { data: [...], totals: {...} }
-    if (['general', 'general_accuracy', 'general_merged', 'travel_sheet'].includes(reportType.value)) {
+    if (['general', 'general_accuracy', 'general_merged', 'travel_sheet', 'travel_sheet_dn', 'driver_travel_sheet', 'route_data_sensors', 'drives_stops', 'overspeednew', 'overspeednew2'].includes(reportType.value)) {
       generalPaginated.value.data = res.data.data || [];
       generalPaginated.value.totals_row = res.data.totals || null;
       generalPaginated.value.current_page = res.data.current_page || page;
       generalPaginated.value.last_page = res.data.last_page || 1;
       generalPaginated.value.total = res.data.total || generalPaginated.value.data.length;
+      if (res.data.sensorLabels) {
+        sensorLabels.value = res.data.sensorLabels;
+      }
     } else {
       generalPaginated.value.data = res.data.data || [];
       generalPaginated.value.totals_row = res.data.totals_row || null;
       generalPaginated.value.current_page = res.data.current_page ?? 1;
       generalPaginated.value.last_page = res.data.last_page ?? 1;
       generalPaginated.value.total = res.data.total ?? 0;
+    }
+    
+    if (res.data.labels) {
+      sensorLabels.value = res.data.labels;
     }
   } catch (e) {
     console.error('Failed to load report data:', e);
@@ -981,6 +1257,115 @@ td.sticky-col {
   font-size: 13px;
   font-weight: 600;
   color: var(--text);
+}
+
+/* Summary Section Styles */
+.report-summary-container {
+  margin-top: 20px;
+  padding: 15px 0;
+  border-top: 1px solid #e2e8f0;
+}
+
+.summary-title {
+  display: none; /* Hidden to match screenshot */
+}
+
+.summary-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 25px;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+
+.summary-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.summary-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.report-header-info {
+  margin-bottom: 25px;
+}
+
+.report-header-info .info-row {
+  font-size: 13px;
+  margin-bottom: 4px;
+  color: #1e293b;
+}
+
+.report-main-title {
+  font-size: 16px;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  color: #0f172a;
+}
+
+.summary-value a {
+  color: #0b1eaa;
+  text-decoration: underline;
+}
+
+/* Professional Report Theming */
+.pro-header-row-1 th, .pro-header-row-2 th {
+  background: #f8fafc !important;
+  color: #1e293b !important;
+  border: 1px solid #e2e8f0 !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  font-size: 11px !important;
+  letter-spacing: 0.5px;
+}
+
+.pro-report-row td {
+  border: 1px solid #e2e8f0 !important;
+  padding: 10px 12px !important;
+  font-size: 12px !important;
+  color: #334155;
+}
+
+.pro-report-row:hover td {
+  background: #f1f5f9 !important;
+}
+
+.status-stopped { color: #dc2626; font-weight: 700; }
+.status-moving { color: #16a34a; font-weight: 700; }
+
+.address-cell {
+  color: #0b1eaa;
+  font-size: 11px;
+  max-width: 400px;
+}
+
+.address-cell a {
+  color: #0b1eaa;
+  text-decoration: none;
+}
+
+.address-cell a:hover {
+  text-decoration: underline;
+}
+
+.pro-report-row.stopped {
+  background: #fffafa;
 }
 
 /* RTL Support */

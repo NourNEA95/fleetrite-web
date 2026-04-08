@@ -14,7 +14,11 @@ const router = createRouter({
         { path: "/tracking", component: Tracking, meta: { requiresAuth: true } },
         { path: "/follow/:imei", component: FollowPage, meta: { requiresAuth: true } },
         { path: "/dashboard/:imei", component: UnitDashboard, meta: { requiresAuth: true } },
-        { path: "/reports/viewer", component: () => import("../components/views/ReportViewerPage.vue"), meta: { requiresAuth: true } },
+        { name: "reports-viewer", path: "/reports/viewer", component: () => import("../components/views/ReportViewerPage.vue"), meta: { requiresAuth: true } },
+        { path: '/reports/drives-stops-logic', name: 'reports-drives-stops-logic', component: () => import('../components/views/DrivesStopsLogicViewer.vue') },
+        { path: '/reports/current-position', name: 'reports-current-position', component: () => import('../components/views/CurrentPositionViewer.vue') },
+        { path: '/reports/current-position-off', name: 'reports-current-position-off', component: () => import('../components/views/CurrentPositionOffViewer.vue') },
+        { path: '/reports/underspeed', name: 'reports-underspeed', component: () => import('../components/views/UnderspeedViewer.vue') },
     ],
 });
 

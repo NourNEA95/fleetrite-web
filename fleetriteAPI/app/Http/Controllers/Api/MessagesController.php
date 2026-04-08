@@ -7,114 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-class HistoryController extends Controller
+class MessagesController extends Controller
 {
-    /**
-     * Get historical route data for a specific vehicle
-     */
-    public function getRoute(Request $request, $imei)
-    {
-        $user = $request->user();
-
-        // 1. Verify user has access to this vehicle
-        $ownsVehicle = $user->userObjects()->where('imei', $imei)->exists();
-        if (!$ownsVehicle) {
-            return response()->json(['ok' => false, 'message' => 'Unauthorized or vehicle not found'], 403);
-        }
-
-        // Fetch User Settings for Timezone parity
-        $tzSettings = [
-            'timezone'  => $user->timezone ?? '+ 0 hour',
-            'dst'       => $user->dst ?? 'false',
-            'dst_start' => $user->dst_start ?? '',
-            'dst_end'   => $user->dst_end ?? '',
-        ];
-
-        // 2. Determine dates based on period or custom inputs
-        $period = $request->input('period', 'today');
-        $from = $request->input('from');
-        $to = $request->input('to');
-
-        if ($period !== 'custom') {
-            switch ($period) {
-                case 'yesterday':
-                    $from = date('Y-m-d 00:00:00', strtotime('-1 day'));
-                    $to = date('Y-m-d 23:59:59', strtotime('-1 day'));
-                    break;
-                case 'last_hour':
-                    $from = date('Y-m-d H:i:s', strtotime('-1 hour'));
-                    $to = date('Y-m-d H:i:s');
-                    break;
-                case 'current_week':
-                    $from = date('Y-m-d 00:00:00', strtotime('monday this week'));
-                    $to = date('Y-m-d 23:59:59');
-                    break;
-                case 'today':
-                default:
-                    $from = date('Y-m-d 00:00:00');
-                    $to = date('Y-m-d 23:59:59');
-                    break;
-            }
-        } else {
-            // Validate custom dates
-            $request->validate([
-                'from' => 'required',
-                'to' => 'required',
-            ]);
-            // Convert from ISO/HTML5 datetime-local format if needed
-            $from = date('Y-m-d H:i:s', strtotime($from));
-            $to = date('Y-m-d H:i:s', strtotime($to));
-        }
-
-        // 3. Check if the dynamic table exists
-        $tableName = "gs_object_data_" . $imei;
-        if (!Schema::hasTable($tableName)) {
-            return response()->json(['ok' => true, 'data' => []]);
-        }
-
-        // 4. Query data
-        // We select the same fields as the TrackingController plus dt_tracker for ordering
-        $points = DB::table($tableName)
-            ->distinct()
-            ->select([
-                'dt_tracker',
-                'lat',
-                'lng',
-                'altitude',
-                'angle',
-                'speed',
-                'params'
-            ])
-            ->whereBetween('dt_tracker', [$from, $to])
-            ->orderBy('dt_tracker', 'asc')
-            ->get();
-
-        // 5. Format results
-        $formattedPoints = $points->map(function ($point) {
-            $params = json_decode($point->params, true) ?: [];
-            
-            return [
-                'lat' => (float)$point->lat,
-                'lng' => (float)$point->lng,
-                'speed' => round((float)$point->speed),
-                'heading' => round((float)$point->angle),
-                'altitude' => round((float)$point->altitude),
-                'dt_tracker' => $point->dt_tracker,
-                'params' => $params,
-                // Synthetic fields for easier frontend use
-                'ignition' => isset($params['acc']) ? ($params['acc'] ? 'On' : 'Off') : 'Unknown',
-            ];
-        });
-
-        return response()->json([
-            'ok' => true,
-            'imei' => $imei,
-            'count' => $formattedPoints->count(),
-            'data' => $formattedPoints,
-            'settings' => $tzSettings
-        ]);
-    }
-
     /**
      * Get historical message data for a specific vehicle with pagination and sorting
      */
@@ -206,6 +100,11 @@ class HistoryController extends Controller
 
         // 5. Format results exactly as needed
         $formattedPoints = collect($paginator->items())->map(function ($point) {
+            // we will format params in frontend, but send the raw string securely,
+            // or we decode here and let frontend format it.
+            // Since we need it as a comma separated string: 'key=value, key2=value2', we can do it on the backend, or frontend.
+            // Returning the string as is ('{"acc":0, "priority": 0}') let's the frontend parse it. 
+            // Wait, legacy stores it as json string. Let's send the string or decode it.
             $rawParams = $point->params;
             
             return [

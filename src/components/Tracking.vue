@@ -159,8 +159,15 @@
         v-if="selectedVehicle"
         :selected-vehicle="selectedVehicle"
         :panel-height="panelHeight"
+        :history-period="historyPeriod"
+        :history-from="historyFrom"
+        :history-to="historyTo"
+        :history-data="historyData"
+        :history-index="historyIndex"
+        :is-history-playing="isHistoryPlaying"
         @init-resize="initPanelResize"
         @close="closePanel"
+        @reload-history="handleFetchHistory"
       />
     </main>
 
@@ -189,8 +196,8 @@
 
     <!-- Reports Modal -->
     <ReportsModal
-      v-if="showReportsModal"
-      @close="showReportsModal = false"
+      v-if="reportsStore.showMainModal"
+      @close="reportsStore.showMainModal = false"
     />
 
     <!-- Custom Toast Notification -->
@@ -220,6 +227,7 @@ import { ref, onMounted, computed, watch, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { useThemeStore } from '../stores/theme';
+import { useReportStore } from '../stores/reports';
 import api from '../services/api';
 
 // Component Imports
@@ -251,6 +259,7 @@ L.Icon.Default.mergeOptions({
 const router = useRouter();
 const auth = useAuthStore();
 const themeStore = useThemeStore();
+const reportsStore = useReportStore();
 
 const statusColors = computed(() => ({
   Moving: themeStore.isDarkMode ? '#36ffb4' : '#10b981',
@@ -263,13 +272,18 @@ const markersGroup = ref(null);
 
 const searchQuery = ref('');
 const filter = ref('All');
-const showReportsModal = ref(false);
+// showReportsModal is now managed by reportsStore.showMainModal
 
 function handleNavAction(action) {
   if (action === 'reports') {
-    showReportsModal.value = true;
+    reportsStore.showMainModal = true;
   } else if (action === 'tracking') {
-    activeMainTab.value = 'Fleet';
+    if (activeMainTab.value === 'Fleet') {
+      isPanelOpen.value = !isPanelOpen.value;
+    } else {
+      activeMainTab.value = 'Fleet';
+      isPanelOpen.value = true;
+    }
   } else if (action === 'events') {
     activeMainTab.value = 'Events';
   } else if (action === 'dashboard') {
@@ -308,6 +322,7 @@ const historyPlayStatus = ref('Stopped');
 const historyIndex = ref(0);
 const isHistoryPlaying = ref(false);
 const historyPlaybackSpeed = ref(1000);
+const historySettings = ref(null); // Cache for timezone/dst settings
 
 // Events State
 const eventsList = ref([]);
@@ -574,7 +589,7 @@ function drawMarkers() {
         marker.setIcon(createCarIcon(newColor, newHeading));
       }
 
-      marker.setPopupContent(`<b>${obj.name}</b><br>IMEI: ${obj.imei}<br>Speed: ${obj.speed} km/h`);
+      marker.setPopupContent(`<b>${obj.name}</b><br>IMEI: ${obj.imei}<br>Speed: ${Math.round(obj.speed || 0)} km/h`);
 
       if (selectedImei.value === obj.imei) {
         selectedVehicle.value = obj;
@@ -592,7 +607,7 @@ function drawMarkers() {
       const icon = createCarIcon(markerColor, obj.heading != null ? obj.heading : 0);
 
       const marker = L.marker([obj.lat || 0, obj.lng || 0], { icon })
-        .bindPopup(`<b>${obj.name}</b><br>IMEI: ${obj.imei}<br>Speed: ${obj.speed} km/h`)
+        .bindPopup(`<b>${obj.name}</b><br>IMEI: ${obj.imei}<br>Speed: ${Math.round(obj.speed || 0)} km/h`)
         .addTo(markersGroup.value);
 
       marker.on('click', () => {
@@ -712,7 +727,20 @@ function handlePeriodChange() {
   if (historyPeriod.value !== 'custom') {
     historyFrom.value = '';
     historyTo.value = '';
-  }
+    } else {
+      // Pre-fill datetime-local with today's date and default 00:00 for both
+      // as per user request to have clean start/end points.
+      const now = new Date();
+      const dateStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+      
+      if (!historyFrom.value) {
+        historyFrom.value = dateStr + 'T00:00';
+      }
+      if (!historyTo.value) {
+        // Defaulting to 00:00 for both From and To as requested by user.
+        historyTo.value = dateStr + 'T00:00';
+      }
+    }
 }
 
 async function handleFetchHistory() {
@@ -731,8 +759,7 @@ async function handleFetchHistory() {
 
     if (!historyTo.value) {
       const now = new Date();
-      const offsetMs = now.getTimezoneOffset() * 60 * 1000;
-      historyTo.value = new Date(now.getTime() - offsetMs).toISOString().slice(0, 16);
+      historyTo.value = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0') + 'T' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
     }
   }
 
@@ -743,16 +770,93 @@ async function handleFetchHistory() {
   historyData.value = [];
 
   try {
+    const now = new Date();
+    let f, t;
+    
+    // ── Timezone Helper ──────────────────────────────────────────
+    const getProfileOffset = (settings) => {
+      let tzOffsetHours = 0;
+      if (settings?.timezone) {
+        const match = settings.timezone.match(/([+-])\s*(\d+)/);
+        if (match) {
+          const sign = match[1] === '+' ? 1 : -1;
+          tzOffsetHours = sign * parseInt(match[2], 10);
+        }
+      }
+      if (settings?.dst === 'true') tzOffsetHours += 1;
+      return tzOffsetHours;
+    };
+
+    const parseLocalToUTC = (val, settings) => {
+      if (!settings) return new Date(val); // Fallback to browser locale
+      const tzOffsetHours = getProfileOffset(settings);
+      const [dPart, tPart] = val.split('T');
+      const [year, month, day] = dPart.split('-').map(Number);
+      const [hour, min] = tPart.split(':').map(Number);
+      const dUTC = new Date(Date.UTC(year, month - 1, day, hour, min));
+      return new Date(dUTC.getTime() - (tzOffsetHours * 60 * 60 * 1000));
+    };
+    // ─────────────────────────────────────────────────────────────
+
+    if (historyPeriod.value === 'today') {
+      f = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+      t = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+    } else if (historyPeriod.value === 'yesterday') {
+      f = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 0, 0, 0);
+      t = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59);
+    } else if (historyPeriod.value === 'last_hour') {
+      f = new Date(now.getTime() - 60 * 60 * 1000);
+      t = new Date(now);
+    } else if (historyPeriod.value === 'current_week') {
+      const startOfWeek = now.getDate() - now.getDay(); 
+      f = new Date(now.getFullYear(), now.getMonth(), startOfWeek, 0, 0, 0);
+      t = new Date(now);
+    } else if (historyPeriod.value === 'last_week') {
+      const startOfPrevWeek = now.getDate() - now.getDay() - 7;
+      f = new Date(now.getFullYear(), now.getMonth(), startOfPrevWeek, 0, 0, 0);
+      t = new Date(now.getFullYear(), now.getMonth(), startOfPrevWeek + 6, 23, 59, 59);
+    } else {
+      // Custom Range: Use cached profile settings if available to maintain perfect sync
+      f = parseLocalToUTC(historyFrom.value, historySettings.value);
+      t = parseLocalToUTC(historyTo.value, historySettings.value);
+    }
+
+    const fromUTC = f.toISOString().slice(0, 19).replace('T', ' ');
+    const toUTC = t.toISOString().slice(0, 19).replace('T', ' ');
+
     const params = {
-      period: historyPeriod.value,
-      from: historyFrom.value,
-      to: historyTo.value
+      period: 'custom',
+      from: fromUTC,
+      to: toUTC
     };
 
     const res = await api.get(`/api/history/${historyImei.value}`, { params });
 
     if (res.data && res.data.ok) {
-      historyData.value = res.data.data;
+      const data = res.data.data;
+      const settings = res.data.settings || {};
+      historySettings.value = settings; // Cache for next search
+      
+      const tzOffsetHours = getProfileOffset(settings);
+
+      // Convert DB UTC to Profile Local for display
+      for (let i = 0; i < data.length; i++) {
+        if (data[i].dt_tracker) {
+          const utcPart = data[i].dt_tracker.replace(' ', 'T');
+          const d = new Date(utcPart + 'Z'); 
+          const profileDate = new Date(d.getTime() + (tzOffsetHours * 60 * 60 * 1000));
+          
+          data[i].dt_tracker = 
+            profileDate.getUTCFullYear() + '-' + 
+            String(profileDate.getUTCMonth()+1).padStart(2,'0') + '-' + 
+            String(profileDate.getUTCDate()).padStart(2,'0') + ' ' + 
+            String(profileDate.getUTCHours()).padStart(2,'0') + ':' + 
+            String(profileDate.getUTCMinutes()).padStart(2,'0') + ':' + 
+            String(profileDate.getUTCSeconds()).padStart(2,'0');
+        }
+      }
+      
+      historyData.value = data;
 
       if (historyData.value.length > 0) {
         drawHistoryPath();

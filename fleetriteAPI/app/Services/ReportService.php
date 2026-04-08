@@ -105,7 +105,7 @@ class ReportService
             'pass_key' => 'AAA21A609BFD46C1437E01867D22913B'
         ];
 
-        $apiUrl = (request() ? request()->getSchemeAndHttpHost() : config('app.url')) . '/fleetrite_nv_latest_version/func/process_api.php';
+        $apiUrl = 'https://nv.esoft-eg.com/func/process_api.php';
         
         $isGeneralKeyBased = in_array($type, ['general', 'general_information', 'general_merged', 'general_accuracy'], true);
 

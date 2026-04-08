@@ -14,6 +14,7 @@ async function deploy() {
             host: "167.235.1.40",
             user: "vue_front",
             password: "kDFb2pKhnkGmMeF5",
+            port: 45555,
             secure: false
         });
         
@@ -23,7 +24,7 @@ async function deploy() {
         
         await client.uploadFromDir(localDist, "/dist");
         
-        console.log("Upload to /dist finished successfully!");
+        console.log("Upload to root finished successfully!");
     } catch (err) {
         console.error("FTP Error: ", err);
     }

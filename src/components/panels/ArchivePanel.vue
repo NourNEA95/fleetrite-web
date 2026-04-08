@@ -117,21 +117,125 @@
             Custom Range
           </div>
           <div class="date-popup-body">
+            <!-- From Field -->
             <div class="date-field">
               <label>From</label>
-              <input type="datetime-local" :value="historyFrom" @input="$emit('update:historyFrom', $event.target.value)" class="date-input" />
+              <div class="split-picker">
+                <input type="date" :value="splitFrom.date" @input="updateDate('from', $event.target.value)" class="date-input" />
+                <select :value="splitFrom.hour" @change="updateTime('from', 'hour', $event.target.value)" class="time-select">
+                  <option v-for="h in 24" :key="h-1" :value="String(h-1).padStart(2,'0')">{{ String(h-1).padStart(2,'0') }}</option>
+                </select>
+                <span class="time-sep">:</span>
+                <select :value="splitFrom.minute" @change="updateTime('from', 'minute', $event.target.value)" class="time-select">
+                  <option v-for="m in 60" :key="m-1" :value="String(m-1).padStart(2,'0')">{{ String(m-1).padStart(2,'0') }}</option>
+                </select>
+              </div>
             </div>
+
+            <!-- To Field -->
             <div class="date-field">
               <label>To</label>
-              <input type="datetime-local" :value="historyTo" @input="$emit('update:historyTo', $event.target.value)" class="date-input" />
+              <div class="split-picker">
+                <input type="date" :value="splitTo.date" @input="updateDate('to', $event.target.value)" class="date-input" />
+                <select :value="splitTo.hour" @change="updateTime('to', 'hour', $event.target.value)" class="time-select">
+                  <option v-for="h in 24" :key="h-1" :value="String(h-1).padStart(2,'0')">{{ String(h-1).padStart(2,'0') }}</option>
+                </select>
+                <span class="time-sep">:</span>
+                <select :value="splitTo.minute" @change="updateTime('to', 'minute', $event.target.value)" class="time-select">
+                  <option v-for="m in 60" :key="m-1" :value="String(m-1).padStart(2,'0')">{{ String(m-1).padStart(2,'0') }}</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
       </transition>
 
+      <!-- Stops Filter -->
+      <div class="control-group">
+        <label>Stops</label>
+        <div class="custom-select-wrapper" ref="stopsWrapper">
+          <div class="custom-select-trigger" :class="{ open: stopsDropdownOpen }" @click="toggleStopsDropdown">
+            <span class="trigger-text">{{ stopsOptions.find(o => o.value === selectedStopFilter)?.label || '> 1 min' }}</span>
+            <svg class="trigger-arrow" :class="{ rotated: stopsDropdownOpen }" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+          <div v-show="stopsDropdownOpen" class="custom-select-dropdown">
+            <div class="dropdown-list">
+              <div
+                v-for="opt in stopsOptions" :key="opt.value"
+                class="dropdown-option" :class="{ selected: selectedStopFilter === opt.value }"
+                @click="selectStopFilter(opt.value)"
+              >
+                <span class="option-name">{{ opt.label }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <button class="show-btn" @click="$emit('fetch-history')" :disabled="historyLoading || !historyImei">
         {{ historyLoading ? 'Loading...' : 'Show History' }}
       </button>
+    </div>
+
+    <!-- Trip Summary Bar -->
+    <div class="archive-summary" v-if="historyData.length > 0 && isPanelOpen">
+      <div class="summary-item">
+        <span class="label">Distance</span>
+        <span class="value">{{ totalDistance }} km</span>
+      </div>
+      <div class="summary-item">
+        <span class="label">Duration</span>
+        <span class="value">{{ totalDuration }}</span>
+      </div>
+      <div class="summary-item">
+        <span class="label">Stops</span>
+        <span class="value">{{ totalStops }}</span>
+      </div>
+    </div>
+
+    <!-- Events List (Professional Vertical Timeline) -->
+    <div class="events-timeline scrollbar-custom" v-if="historyData.length > 0 && isPanelOpen">
+      <div 
+        v-for="(ev, idx) in routeEvents" 
+        :key="idx" 
+        class="timeline-item" 
+        :class="[ev.type, { active: historyIndex >= ev.index && (idx === routeEvents.length - 1 || historyIndex < routeEvents[idx+1].index) }]"
+        @click="$emit('update:historyIndex', ev.index); $emit('preview-update', ev.index)"
+      >
+        <!-- Connector Line -->
+        <div class="timeline-connector" v-if="idx < routeEvents.length - 1"></div>
+        
+        <!-- Status Icon / Point -->
+        <div class="timeline-point">
+          <div class="point-inner">
+             <svg v-if="ev.type === 'start'" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+             <svg v-else-if="ev.type === 'end'" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"></rect></svg>
+             <svg v-else-if="ev.type === 'stop'" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H9V7h4.5c1.93 0 3.5 1.57 3.5 3.5S15.43 14 13.5 14H13v3h-2zm2-6h-2V9h2c.83 0 1.5.67 1.5 1.5S13.83 11 13 11z"/></svg>
+             <svg v-else-if="ev.type === 'drive'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M4 12c4-8 12-8 16 0"></path></svg>
+          </div>
+        </div>
+
+        <div class="timeline-content">
+          <div class="timeline-header">
+            <span class="type-label">{{ ev.type === 'drive' ? 'Moving' : ev.type.toUpperCase() }}</span>
+            <span class="timestamp">{{ ev.time }}</span>
+          </div>
+          
+          <div class="timeline-body" v-if="ev.type === 'stop' || ev.type === 'drive'">
+            <div class="stats-row">
+              <span class="duration">{{ ev.duration }}</span>
+              <template v-if="ev.type === 'drive'">
+                <span class="divider">•</span>
+                <span class="distance">{{ ev.distance }}</span>
+                <span class="divider">•</span>
+                <span class="avg-speed" title="Average Speed">Avg: {{ ev.avgSpeed }}</span>
+              </template>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div v-if="historyData.length > 0 && isPanelOpen" class="playback-controls">
@@ -231,6 +335,14 @@ const speedOptions = [
   { value: 100,  label: '10x' },
 ];
 
+const stopsOptions = [
+  { value: 1, label: '> 1 min' },
+  { value: 2, label: '> 2 min' },
+  { value: 5, label: '> 5 min' },
+  { value: 10, label: '> 10 min' },
+  { value: 60, label: '> 1 hr' }
+];
+
 // ── Object Dropdown ──────────────────────────────────────
 const dropdownOpen = ref(false);
 const searchQuery = ref('');
@@ -290,24 +402,67 @@ function selectSpeed(value) {
   speedDropdownOpen.value = false;
 }
 
+// ── Starts / Drives Filter ───────────────────────────────────
+const selectedStopFilter = ref(1); // Default 1 minute
+const stopsDropdownOpen = ref(false);
+const stopsWrapper = ref(null);
+
+function toggleStopsDropdown() {
+  closeAll('stops');
+  stopsDropdownOpen.value = !stopsDropdownOpen.value;
+}
+
+function selectStopFilter(val) {
+  selectedStopFilter.value = val;
+  stopsDropdownOpen.value = false;
+}
+
 // ── Close all except one ─────────────────────────────────
 function closeAll(except) {
   if (except !== 'object') dropdownOpen.value = false;
   if (except !== 'period') periodDropdownOpen.value = false;
   if (except !== 'speed')  speedDropdownOpen.value = false;
+  if (except !== 'stops')  stopsDropdownOpen.value = false;
 }
 
 function handleOutsideClick(e) {
   const inObject = selectWrapper.value?.contains(e.target);
   const inPeriod = periodWrapper.value?.contains(e.target);
   const inSpeed  = speedWrapper.value?.contains(e.target);
+  const inStops  = stopsWrapper.value?.contains(e.target);
   if (!inObject) dropdownOpen.value = false;
   if (!inPeriod) periodDropdownOpen.value = false;
   if (!inSpeed)  speedDropdownOpen.value = false;
+  if (!inStops)  stopsDropdownOpen.value = false;
 }
 
 onMounted(() => document.addEventListener('mousedown', handleOutsideClick));
 onUnmounted(() => document.removeEventListener('mousedown', handleOutsideClick));
+
+// ── Split Date Picker Logic ──────────────────────────────
+const splitFrom = computed(() => parseDateTime(props.historyFrom));
+const splitTo   = computed(() => parseDateTime(props.historyTo));
+
+function parseDateTime(val) {
+  if (!val) return { date: '', hour: '00', minute: '00' };
+  const [date, time] = val.split('T');
+  const [hour, minute] = (time || '00:00').split(':');
+  return { date: date || '', hour: hour || '00', minute: minute || '00' };
+}
+
+function updateDate(target, date) {
+  const current = target === 'from' ? splitFrom.value : splitTo.value;
+  const combined = `${date || '0000-00-00'}T${current.hour}:${current.minute}`;
+  emit(target === 'from' ? 'update:historyFrom' : 'update:historyTo', combined);
+}
+
+function updateTime(target, part, val) {
+  const current = target === 'from' ? splitFrom.value : splitTo.value;
+  const h = part === 'hour' ? val : current.hour;
+  const m = part === 'minute' ? val : current.minute;
+  const combined = `${current.date || '0000-00-00'}T${h}:${m}`;
+  emit(target === 'from' ? 'update:historyFrom' : 'update:historyTo', combined);
+}
 
 // ── Slider ───────────────────────────────────────────────
 function onSliderInput(event) {
@@ -315,6 +470,161 @@ function onSliderInput(event) {
   emit('update:historyIndex', newIndex);
   emit('preview-update', newIndex);
 }
+
+// ── Stops and Drives Engine ──────────────────────────────
+function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Radius of the earth in km
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; 
+}
+
+function formatDuration(seconds) {
+  if (seconds < 60) return `${seconds} s`;
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  if (m < 60) return `${m} min ${s} s`;
+  const h = Math.floor(m / 60);
+  const m2 = m % 60;
+  return `${h} h ${m2} min`;
+}
+
+const routeEvents = computed(() => {
+  const data = props.historyData;
+  if (!data || data.length === 0) return [];
+  
+  const minStopSec = selectedStopFilter.value * 60;
+  const events = [];
+  
+  let isStopped = false;
+  let currentStopStartIdx = -1;
+  let currentDriveStartIdx = 0;
+  let currentDriveDistance = 0;
+  let currentDriveMaxSpeed = 0;
+  
+  // Start block
+  events.push({ type: 'start', time: data[0].dt_tracker, index: 0, info: '' });
+
+  for (let i = 0; i < data.length; i++) {
+    const pt = data[i];
+    
+    // Check moving state
+    const speed = pt.speed || 0;
+    // We treat speed > 3 km/h as moving, or ignition On and speed > 0.
+    const isMovingPoint = speed > 3 || (pt.ignition === 'On' && speed > 0);
+    const isStopPoint = !isMovingPoint;
+
+    // Build distance sum
+    if (i > 0) {
+      currentDriveDistance += getDistanceFromLatLonInKm(data[i-1].lat, data[i-1].lng, pt.lat, pt.lng);
+      if (speed > currentDriveMaxSpeed) currentDriveMaxSpeed = speed;
+    }
+
+    if (!isStopped && isStopPoint && i < data.length - 1) {
+      isStopped = true;
+      currentStopStartIdx = i;
+    } else if (isStopped && !isStopPoint) {
+      const stopStartPt = data[currentStopStartIdx];
+      const stopEndPt = data[i];
+      const startMs = new Date(stopStartPt.dt_tracker.replace(' ','T')).getTime();
+      const endMs = new Date(stopEndPt.dt_tracker.replace(' ','T')).getTime();
+      const durationSec = Math.floor((endMs - startMs) / 1000);
+      
+      if (durationSec >= minStopSec) {
+        // Valid STOP, generate previous Drive block first
+        if (currentStopStartIdx > currentDriveStartIdx) {
+          const driveStartPt = data[currentDriveStartIdx];
+          const dStartMs = new Date(driveStartPt.dt_tracker.replace(' ','T')).getTime();
+          const dDurationSec = Math.floor((startMs - dStartMs) / 1000);
+          
+          events.push({
+            type: 'drive',
+            time: driveStartPt.dt_tracker,
+            index: currentDriveStartIdx,
+            duration: formatDuration(dDurationSec),
+            distance: currentDriveDistance.toFixed(2) + ' km',
+            maxSpeed: Math.round(currentDriveMaxSpeed) + ' km/h',
+            avgSpeed: dDurationSec > 0 ? Math.round((currentDriveDistance / (dDurationSec / 3600))) + ' km/h' : '0 km/h'
+          });
+        }
+        
+        // Push Stop block
+        events.push({
+          type: 'stop',
+          time: stopStartPt.dt_tracker,
+          index: currentStopStartIdx,
+          duration: formatDuration(durationSec)
+        });
+        
+        // Reset drive context
+        currentDriveStartIdx = i;
+        currentDriveDistance = 0;
+        currentDriveMaxSpeed = 0;
+      }
+      isStopped = false;
+    }
+  }
+
+  // Trailing drive logic
+  if (currentDriveStartIdx < data.length - 1) {
+    const dStartPt = data[currentDriveStartIdx];
+    const dEndPt = data[data.length - 1];
+    const dStartMs = new Date(dStartPt.dt_tracker.replace(' ','T')).getTime();
+    const dEndMs = new Date(dEndPt.dt_tracker.replace(' ','T')).getTime();
+    const dDurationSec = Math.floor((dEndMs - dStartMs) / 1000);
+    
+    if (dDurationSec > 0) {
+      events.push({
+        type: 'drive',
+        time: dStartPt.dt_tracker,
+        index: currentDriveStartIdx,
+        duration: formatDuration(dDurationSec),
+        distance: currentDriveDistance.toFixed(2) + ' km',
+        maxSpeed: Math.round(currentDriveMaxSpeed) + ' km/h',
+        avgSpeed: dDurationSec > 0 ? Math.round((currentDriveDistance / (dDurationSec / 3600))) + ' km/h' : '0 km/h'
+      });
+    }
+  }
+
+  events.push({ type: 'end', time: data[data.length - 1].dt_tracker, index: data.length - 1, info: '' });
+  return events;
+});
+
+const totalDistance = computed(() => {
+  let dist = 0;
+  for (let i = 1; i < props.historyData.length; i++) {
+    dist += getDistanceFromLatLonInKm(props.historyData[i - 1].lat, props.historyData[i - 1].lng, props.historyData[i].lat, props.historyData[i].lng);
+  }
+  return dist.toFixed(2);
+});
+
+const totalStops = computed(() => {
+  return routeEvents.value.filter(e => e.type === 'stop').length;
+});
+
+const totalDuration = computed(() => {
+  if (props.historyData.length < 2) return '0 s';
+  const startMs = new Date(props.historyData[0].dt_tracker.replace(' ','T')).getTime();
+  const endMs = new Date(props.historyData[props.historyData.length - 1].dt_tracker.replace(' ','T')).getTime();
+  const sec = Math.floor((endMs - startMs) / 1000);
+  return formatDuration(sec);
+});
+
+function getEventTooltip(ev) {
+  if (ev.type === 'drive') {
+    return `Route length: ${ev.distance}\nMove duration: ${ev.duration}\nTop speed: ${ev.maxSpeed}\nAverage speed: ${ev.avgSpeed}`;
+  }
+  if (ev.type === 'stop') {
+    return `Arrived: ${ev.time}\nStop Duration: ${ev.duration}`;
+  }
+  return '';
+}
+
 </script>
 
 
@@ -402,6 +712,51 @@ function onSliderInput(event) {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--muted);
+}
+
+.split-picker {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.time-select {
+  background: rgba(0, 0, 0, 0.05); /* Lighter bg to work in both themes */
+  border: 1px solid var(--border);
+  color: var(--text); /* Use theme color */
+  height: 38px; /* Slightly shorter */
+  padding: 0 4px; /* More compact */
+  border-radius: 8px;
+  font-size: 11px; /* Smaller font as requested */
+  font-weight: 700;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 48px;
+  text-align: center;
+}
+.time-select:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.time-select:focus {
+  border-color: var(--accent);
+  background: rgba(79, 124, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(79, 124, 255, 0.1);
+}
+.time-select option {
+  background: var(--card);
+  color: var(--text);
+  padding: 10px;
+}
+.time-sep {
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 14px;
+}
+.split-picker .date-input {
+  flex: 1;
+  height: 38px; /* Sync with selects */
+  padding: 8px 10px;
 }
 
 /* Transition */
@@ -622,7 +977,7 @@ function onSliderInput(event) {
 .p-btn {
   background: var(--card);
   border: 1px solid var(--border);
-  color: #fff;
+  color: var(--text); /* Use theme color instead of hardcoded #fff */
   width: 44px; height: 44px;
   border-radius: 50%;
   cursor: pointer;
@@ -660,6 +1015,151 @@ function onSliderInput(event) {
   font-size: 13px;
   font-weight: 600;
   color: var(--text);
+}
+
+/* Trip Summary Bar */
+.archive-summary {
+  display: flex;
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px;
+  gap: 16px;
+  flex-shrink: 0;
+}
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.summary-item .label {
+  font-size: 9px;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.summary-item .value {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Events Timeline (Vertical Design) */
+.events-timeline {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  background: var(--card);
+  padding: 10px 0;
+}
+
+.timeline-item {
+  position: relative;
+  display: flex;
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-height: 56px;
+}
+.timeline-item:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+.timeline-item.active {
+  background: rgba(79, 124, 255, 0.08);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.timeline-connector {
+  position: absolute;
+  left: 26px;
+  top: 32px;
+  bottom: -4px;
+  width: 2px;
+  background: var(--border);
+  z-index: 1;
+}
+
+.timeline-point {
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+  width: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 4px;
+}
+.point-inner {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg1);
+  border: 2px solid var(--border);
+  color: var(--muted);
+  transition: all 0.2s;
+}
+
+.timeline-content {
+  margin-left: 14px;
+  flex: 1;
+  min-width: 0;
+}
+.timeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.type-label {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--muted);
+}
+.timestamp {
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.stats-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.divider { opacity: 0.3; }
+.avg-speed { font-size: 11px; color: var(--muted); }
+
+/* Item Specific Colors */
+.timeline-item.start .point-inner { border-color: #84cc16; color: #84cc16; }
+.timeline-item.end .point-inner   { border-color: #10b981; color: #10b981; }
+.timeline-item.stop .point-inner  { border-color: #3b82f6; color: #3b82f6; }
+.timeline-item.drive .point-inner { border-color: #ef4444; color: #ef4444; }
+
+.timeline-item.start .type-label { color: #84cc16; }
+.timeline-item.end .type-label   { color: #10b981; }
+.timeline-item.stop .type-label  { color: #3b82f6; }
+.timeline-item.drive .type-label { color: #ef4444; }
+
+.timeline-item.active .point-inner {
+  background: currentColor;
+  color: var(--bg1);
+  transform: scale(1.15);
+  box-shadow: 0 0 10px currentColor;
+}
+
+/* Adjustments for Drive type connector line */
+.timeline-item.drive .timeline-connector {
+  border-left: 2px dashed rgba(239, 68, 68, 0.4);
+  background: transparent;
 }
 
 </style>

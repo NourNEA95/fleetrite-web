@@ -14,6 +14,7 @@ async function deploy() {
             host: "167.235.1.40",
             user: "vue_back",
             password: "KSsJrpyizBmf5mZA",
+            port: 45555,
             secure: false
         });
 
@@ -50,9 +51,18 @@ async function deploy() {
             "app/Services/Reports/GeneralAccuracyService.php",
             "app/Services/Reports/GeneralMergedService.php",
             "app/Services/Reports/TravelSheetService.php",
+            "app/Services/Reports/TravelSheetDayNightService.php",
+            "app/Services/Reports/DriverTravelService.php",
+            "app/Services/Reports/RouteDataSensorsReportService.php",
+            "app/Http/Controllers/Api/Reports/TravelSheetDayNightController.php",
+            "app/Http/Controllers/Api/Reports/DriverTravelController.php",
+            "app/Http/Controllers/Api/Reports/RouteDataSensorsController.php",
+            "app/Http/Controllers/Api/GridController.php",
+            "app/Http/Controllers/Api/MessagesController.php",
             "routes/api.php",
             "config/cors.php",
-            "database/migrations/2026_03_14_015203_create_reports_table.php"
+            "database/migrations/2026_03_14_015203_create_reports_table.php",
+            "public/clear_cache.php"
         ];
 
         for (const file of filesToUpload) {

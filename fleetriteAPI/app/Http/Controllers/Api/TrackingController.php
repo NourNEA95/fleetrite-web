@@ -73,10 +73,17 @@ class TrackingController extends Controller
         
         $lastSeen = new \DateTime($dt_tracker);
         $now = new \DateTime();
-        $diff = $now->getTimestamp() - $lastSeen->getTimestamp();
+        $diff = abs($now->getTimestamp() - $lastSeen->getTimestamp());
 
-        if ($diff > 3600) return 'Offline'; // 1 hour
-        if ($speed > 5) return 'Moving';
+        // If it's EXTREMELY old (e.g. > 7 days), then it's Offline
+        if ($diff > 604800) return 'Offline'; 
+        
+        // If speed > 0 (or a small threshold), it's Moving, no matter how old (within 7 days)
+        if ($speed > 2) return 'Moving';
+        
+        // If speed is 0 and it's quite old (> 24 hours), mark as Offline
+        if ($speed <= 2 && $diff > 86400) return 'Offline';
+        
         return 'Idle';
     }
 }

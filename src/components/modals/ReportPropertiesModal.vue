@@ -209,6 +209,11 @@
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
                   </div>
                   <div v-if="activeDropdown === 'sensors'" class="dropdown-panel glass-panel">
+                    <div class="panel-header">
+                      <button class="select-all-btn" @click.stop="toggleSelectAll('sensors')">
+                        {{ (form.sensor_names?.length || 0) === (metadata.sensors?.length || 0) ? 'Deselect All' : 'Select All' }}
+                      </button>
+                    </div>
                     <div class="panel-list custom-scrollbar">
                       <div v-if="!(metadata.sensors?.length)" class="no-data-hint">
                         {{ (form.imei?.length || 0) ? 'No sensors found' : 'Select objects first' }}
@@ -452,11 +457,15 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import api from '../../services/api';
 import PremiumToast from '../common/PremiumToast.vue';
 import { useAuthStore } from '../../stores/auth';
+import { useReportStore } from '../../stores/reports';
 
 const auth = useAuthStore();
+const reportsStore = useReportStore();
+const router = useRouter();
 
 const props = defineProps({
   editData: {
@@ -618,6 +627,11 @@ const form = reactive({
   other_rag_high_score: '5'
 });
 
+// Sync form changes to store
+watch(form, (newVal) => {
+  reportsStore.updateForm(newVal);
+}, { deep: true });
+
 onMounted(async () => {
   await fetchMetadata();
   
@@ -673,7 +687,8 @@ onMounted(async () => {
       }
     }
   } else {
-    handleTypeChange();
+    // Initialize from store if not editing a saved template
+    Object.assign(form, reportsStore.form);
   }
 });
 const metadata = reactive({
@@ -782,6 +797,9 @@ const toggleSelectAll = (type) => {
   } else if (type === 'data_items') {
     if ((form.data_items?.length || 0) === (dataItemsList.value?.length || 0)) form.data_items = [];
     else form.data_items = dataItemsList.value.map(i => i.value);
+  } else if (type === 'sensors') {
+    if ((form.sensor_names?.length || 0) === (metadata.sensors?.length || 0)) form.sensor_names = [];
+    else form.sensor_names = [...(metadata.sensors || [])];
   }
 };
 
@@ -918,7 +936,7 @@ const isFieldEnabled = (fieldName) => {
     case 'speed_limit':
       return ["general", "general_merged", "general_accuracy", "mileage_daily", "drives_stops", "travel_sheet", "driver_score_new", "travel_sheet_dn", "driver_travel_sheet", "driver_mileage", "driver_mileage_daily", "driver_overspeed", "overspeed", "underspeed", "overspeed_count", "underspeed_count", "rag", "rag_driver", "routes", "marker_in_out_gen", "zone_in_out_general", "routes_stops"].includes(e);
     case 'stop_duration':
-      return ["general", "general_merged", "general_accuracy", "mileage_daily", "drives_stops", "travel_sheet", "travel_sheet_dn", "driver_travel_sheet", "driver_mileage", "driver_mileage_daily", "driver_overspeed", "drives_stops_sensors", "drives_stops_logic", "zone_in_out_general", "routes_stops"].includes(e);
+      return ["general", "general_merged", "general_accuracy", "mileage_daily", "drives_stops", "travel_sheet", "travel_sheet_dn", "driver_travel_sheet", "driver_mileage", "driver_mileage_daily", "driver_overspeed", "drives_stops_sensors", "drives_stops_logic", "zone_in_out_general", "routes_stops", "underspeed"].includes(e);
     case 'show_coordinates':
     case 'show_addresses':
     case 'markers_addresses':
@@ -1092,7 +1110,59 @@ const handleGenerate = async () => {
     let allKeys = [];
     let allData = [];
 
-    if (['general', 'general_accuracy', 'general_merged', 'travel_sheet'].includes(form.type)) {
+    if (['object_info', 'drives_stops_sensors', 'drives_stops_logic'].includes(form.type)) {
+      try {
+        const endpoint_map = {
+          'object_info': '/api/reports/modular/object-info/generate',
+          'drives_stops_sensors': '/api/reports/modular/drives-stops-sensors/generate',
+          'drives_stops_logic': '/api/reports/modular/drives-stops-logic/generate'
+        };
+        const res = await api.post(endpoint_map[form.type], basePayload);
+        console.log(form.type + ' result:', res.data);
+        if (res.data && res.data.status === 'success') {
+          // Find selected object names
+          const selObjects = (metadata.objects || []).filter(o => form.imei.includes(o.imei)).map(o => o.name).join(', ');
+          const selGroups = ''; // Groups not currently handled in this metadata block
+          
+          const enrichedData = {
+            ...res.data,
+            object: selObjects || 'Selected Vehicles',
+            group: selGroups || 'Selected Groups',
+            period: `${fromStr} - ${toStr}`
+          };
+
+          let routeName = 'reports-viewer';
+          if (form.type === 'drives_stops_logic') routeName = 'reports-drives-stops-logic';
+          else if (form.type === 'current_position') routeName = 'reports-current-position';
+
+          router.push({
+            name: routeName,
+            query: { 
+              type: form.type,
+              from: fromStr,
+              to: toStr
+            },
+            state: { reportData: enrichedData }
+          });
+          emit('close');
+          return;
+        } else {
+          showToast(res.data?.message || 'Generation failed', 'danger');
+        }
+      } catch (err) {
+        console.error(form.type + ' Error:', err);
+        let errorMsg = err.response?.data?.message || 'Error generating report';
+        if (err.code === 'ECONNABORTED' || err.message?.includes('timeout') || err.response?.data?.type === 'timeout') {
+          errorMsg = 'Report data is too large. Please reduce the number of vehicles or the selected period (or both) to ensure results are generated.';
+        }
+        showToast(errorMsg, 'danger');
+      } finally {
+        isGenerating.value = false;
+      }
+      return;
+    }
+
+    if (['general', 'general_accuracy', 'general_merged', 'travel_sheet', 'travel_sheet_dn', 'driver_travel_sheet', 'route_data_sensors', 'drives_stops', 'overspeednew', 'overspeednew2', 'current_position', 'current_position_off', 'underspeed'].includes(form.type)) {
       console.log('Selected modular path for:', form.type);
       let initEndpoint = '';
       let genEndpoint = '';
@@ -1109,6 +1179,33 @@ const handleGenerate = async () => {
       } else if (form.type === 'travel_sheet') {
         initEndpoint = '/api/reports/modular/travel-sheet/init';
         genEndpoint = '/api/reports/modular/travel-sheet/generate';
+      } else if (form.type === 'travel_sheet_dn') {
+        initEndpoint = '/api/reports/modular/travel-sheet-dn/init';
+        genEndpoint = '/api/reports/modular/travel-sheet-dn/generate';
+      } else if (form.type === 'driver_travel_sheet') {
+        initEndpoint = '/api/reports/modular/driver-travels/init';
+        genEndpoint = '/api/reports/modular/driver-travels/generate';
+      } else if (form.type === 'route_data_sensors') {
+        initEndpoint = '/api/reports/modular/route-data-sensors/init';
+        genEndpoint = '/api/reports/modular/route-data-sensors/generate';
+      } else if (form.type === 'drives_stops') {
+        initEndpoint = '/api/reports/modular/drives-stops/init';
+        genEndpoint = '/api/reports/modular/drives-stops/generate';
+      } else if (form.type === 'overspeednew') {
+        initEndpoint = '/api/reports/modular/koc-directorate/init';
+        genEndpoint = '/api/reports/modular/koc-directorate/generate';
+      } else if (form.type === 'overspeednew2') {
+        initEndpoint = '/api/reports/modular/koc-summary/init';
+        genEndpoint = '/api/reports/modular/koc-summary/generate';
+      } else if (form.type === 'current_position') {
+        initEndpoint = '/api/reports/modular/current-position/init';
+        genEndpoint = '/api/reports/modular/current-position/generate';
+      } else if (form.type === 'current_position_off') {
+        initEndpoint = '/api/reports/modular/current-position/init';
+        genEndpoint = '/api/reports/modular/current-position/generate';
+      } else if (form.type === 'underspeed') {
+        initEndpoint = '/api/reports/modular/underspeed/init';
+        genEndpoint = '/api/reports/modular/underspeed/generate';
       }
       
       // 1. Initialize session
@@ -1123,9 +1220,18 @@ const handleGenerate = async () => {
       let batchSize = 100;
       let maxParallel = 0; // 0 means all chunks in parallel
 
-      if (form.type === 'travel_sheet') {
+      if (['travel_sheet', 'travel_sheet_dn', 'driver_travel_sheet', 'route_data_sensors', 'drives_stops'].includes(form.type)) {
         batchSize = 1;
-        maxParallel = 100; 
+        maxParallel = 25; 
+      } else if (['overspeednew', 'current_position', 'current_position_off'].includes(form.type)) {
+        batchSize = 1;
+        maxParallel = 100; // High parallelism for 1000 IMEIs
+      } else if (form.type === 'underspeed') {
+        batchSize = 1;
+        maxParallel = 25; 
+      } else if (form.type === 'overspeednew2') {
+        batchSize = 1;
+        maxParallel = 100;
       }
 
       const chunks = [];
@@ -1133,9 +1239,17 @@ const handleGenerate = async () => {
         chunks.push(imeis.slice(i, i + batchSize));
       }
 
-      // 3. Batched generation (Parallel with Throttling if needed)
+      // 3. Batched generation (Parallel with Throttling + Retry/Pooling)
       currentChunk.value = 0;
       totalChunks.value = chunks.length;
+
+      const processChunk = async (chunk) => {
+        const payload = { ...basePayload, imei: chunk, hash_id };
+        const res = await api.post(genEndpoint, payload);
+        currentChunk.value++;
+        generationProgress.value = Math.round((currentChunk.value / totalChunks.value) * 100);
+        return res.data;
+      };
 
       if (maxParallel > 0) {
         // Throttled Parallel Execution
@@ -1143,10 +1257,11 @@ const handleGenerate = async () => {
         const executing = new Set();
         
         for (const chunk of chunks) {
-          const payload = { ...basePayload, imei: chunk, hash_id };
-          const p = api.post(genEndpoint, payload).then(() => {
-            currentChunk.value++;
-            generationProgress.value = Math.round((currentChunk.value / totalChunks.value) * 100);
+          const p = processChunk(chunk).then(resData => {
+            if (resData && resData.status === 'success') {
+              if (resData.rows) allData = [...allData, ...resData.rows];
+              if (resData.headers && !allKeys.length) allKeys = resData.headers;
+            }
             executing.delete(p);
           }).catch(err => {
             executing.delete(p);
@@ -1163,20 +1278,24 @@ const handleGenerate = async () => {
         await Promise.all(results);
       } else {
         // Fast Parallel (All at once)
-        const promises = chunks.map(chunk => {
-          const payload = { ...basePayload, imei: chunk, hash_id };
-          return api.post(genEndpoint, payload).then(() => {
-            currentChunk.value++;
-            generationProgress.value = Math.round((currentChunk.value / totalChunks.value) * 100);
-          });
-        });
+        const promises = chunks.map(chunk => processChunk(chunk).then(resData => {
+          if (resData && resData.status === 'success') {
+            if (resData.rows) allData = [...allData, ...resData.rows];
+            if (resData.headers && !allKeys.length) allKeys = resData.headers;
+          }
+        }));
         await Promise.all(promises);
       }
       
       showToast('Report generated successfully!');
       emit('generated', { 
          type: form.type === 'general' ? 'general_information' : form.type, 
-         hash_id: hash_id
+         hash_id: hash_id,
+         data: {
+           headers: allKeys,
+           rows: allData,
+           period: `${fromStr} - ${toStr}`
+         }
       });
       emit('close');
     } else {

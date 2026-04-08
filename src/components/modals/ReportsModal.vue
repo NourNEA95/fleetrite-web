@@ -58,7 +58,7 @@
               <input type="text" :placeholder="activeTab === 'reports' ? 'Search reports...' : 'Search generated...'" v-model="searchQuery" class="search-input" />
             </div>
             <div class="action-group" v-if="activeTab === 'reports'">
-               <button class="action-btn add-btn" @click="showAddReport = true">
+               <button class="action-btn add-btn" @click="reportsStore.openProperties()">
                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                    <line x1="12" y1="5" x2="12" y2="19"></line>
                    <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -221,8 +221,8 @@
     />
 
     <ReportPropertiesModal 
-      v-if="showAddReport" 
-      :edit-data="editingReport"
+      v-if="reportsStore.showPropertiesModal" 
+      :edit-data="reportsStore.editingReport"
       @close="closeReportModal" 
       @saved="onReportSaved"
       @generated="onReportGenerated"
@@ -248,13 +248,12 @@ import { useRouter } from 'vue-router';
 import ReportPropertiesModal from './ReportPropertiesModal.vue';
 import PremiumToast from '../common/PremiumToast.vue';
 import PremiumConfirm from '../common/PremiumConfirm.vue';
+import { useReportStore } from '../../stores/reports';
 import api from '../../services/api';
 
 const activeTab = ref('reports');
 const searchQuery = ref('');
-const showAddAddReport = ref(false); // Fix potential typo or use existing
-const showAddReport = ref(false);
-const editingReport = ref(null);
+const reportsStore = useReportStore();
 const isLoading = ref(false);
 const emit = defineEmits(['close']);
 const router = useRouter();
@@ -378,13 +377,11 @@ const refreshActiveTab = () => {
 };
 
 const editReport = (report) => {
-  editingReport.value = { ...report };
-  showAddReport.value = true;
+  reportsStore.openProperties(report);
 };
 
 const closeReportModal = () => {
-  showAddReport.value = false;
-  editingReport.value = null;
+  reportsStore.closeProperties();
 };
 
 const onReportSaved = (message) => {
@@ -407,12 +404,19 @@ const onReportGenerated = (payload) => {
     query.key = Array.isArray(rKey) ? rKey.join(',') : rKey;
   }
 
+  // Specialized Viewers Selection
+  let routeName = 'reports-viewer';
+  if (payload.type === 'drives_stops_logic') routeName = 'reports-drives-stops-logic';
+  else if (payload.type === 'current_position') routeName = 'reports-current-position';
+  else if (payload.type === 'current_position_off') routeName = 'reports-current-position-off';
+  else if (payload.type === 'underspeed') routeName = 'reports-underspeed';
+
   router.push({
-    path: '/reports/viewer',
+    name: routeName,
     query: query,
     state: { reportData: payload.data || [] }
   });
-  emit('close');
+  // reportsStore.showMainModal = true remains true for return
 };
 
 const deleteReport = (id) => {
