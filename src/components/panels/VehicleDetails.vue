@@ -59,7 +59,7 @@
               <div class="detail-item gray"><span class="icon">🛣️</span><span class="label">road limit</span><span class="val">{{ gridData.device.speed_limit || '---' }} km/h</span></div>
               <div class="detail-item"><span class="icon">🚀</span><span class="label">Speed</span><span class="val"><strong>{{ gridData.location.speed || '0' }} km/h</strong></span></div>
               <div class="detail-item gray"><span class="icon">🕒</span><span class="label">Time (position)</span><span class="val">{{ gridData.device.last_date || '---' }}</span></div>
-              <div class="detail-item"><span class="icon">🕒</span><span class="label">Time (server)</span><span class="val">{{ new Date().toLocaleString() }}</span></div>
+              <div class="detail-item"><span class="icon">🕒</span><span class="label">Time (server)</span><span class="val">{{ gridData.device.server_date || '---' }}</span></div>
               <div class="detail-item gray"><span class="icon">🔋</span><span class="label">Battery</span><span class="val">{{ gridData.sensors.battery }}</span></div>
               <div class="detail-item"><span class="icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16" style="vertical-align: text-bottom; color: #6b7280;"><path d="M7,4V6H10V8H7L5,10V13H3V10H1V18H3V15H5V18H8L10,20H18V16H20V19H23V9H20V12H18V8L16,6H13V4H7Z" /></svg></span><span class="label">Ignition</span><span class="val"><strong>{{ gridData.sensors.ignition }}</strong></span></div>
               <div class="detail-item gray"><span class="icon">⌛</span><span class="label">Ignition time</span><span class="val">{{ gridData.sensors.ignition_time }}</span></div>

@@ -112,7 +112,7 @@ class GridController extends Controller
                         return $data['display_name'] ?? '---';
                     }
                 } catch (\Exception $e) {
-                    \Log::error("Reverse Geocoding API Error: " . $e->getMessage());
+                    \Illuminate\Support\Facades\Log::error("Reverse Geocoding API Error: " . $e->getMessage());
                 }
                 return '---';
             });
@@ -162,7 +162,7 @@ class GridController extends Controller
                 $roadSpeedLimit = $speedLimitRow->maxspeed;
             }
         } catch (\Exception $e) {
-            \Log::error('Road speed limit error: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('Road speed limit error: ' . $e->getMessage());
         }
 
         return response()->json([
@@ -171,6 +171,7 @@ class GridController extends Controller
                 'protocol' => $object->protocol ?? '---',
                 'active' => $object->active ?? '---',
                 'last_date' => Carbon::parse($object->dt_tracker)->modify($userOffset)->toDateTimeString(),
+                'server_date' => Carbon::parse($object->dt_status)->modify($userOffset)->toDateTimeString(),
                 'rfid' => $rfid,
                 'imei' => $imei,
                 'sim_number' => $object->sim_number ?? '---',

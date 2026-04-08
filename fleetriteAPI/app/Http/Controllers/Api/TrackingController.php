@@ -33,6 +33,7 @@ class TrackingController extends Controller
                 'gs_objects.speed',
                 'gs_objects.angle as heading',
                 'gs_objects.dt_tracker',
+                'gs_objects.dt_status',
                 'gs_objects.params',
                 'gs_user_object_groups.group_name',
                 'gs_user_object_groups.group_id'
@@ -50,6 +51,7 @@ class TrackingController extends Controller
                 'speed' => (float)$obj->speed,
                 'heading' => (int)$obj->heading,
                 'dt_tracker' => $obj->dt_tracker,
+                'dt_server' => $obj->dt_status,
                 'group_name' => $obj->group_name ?: 'Ungrouped',
                 'group_id' => $obj->group_id ?: 0,
                 'status' => $this->calculateStatus($obj->dt_tracker, (float)$obj->speed),
