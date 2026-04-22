@@ -59,6 +59,7 @@ async function deploy() {
             "app/Http/Controllers/Api/Reports/RouteDataSensorsController.php",
             "app/Http/Controllers/Api/GridController.php",
             "app/Http/Controllers/Api/MessagesController.php",
+            "app/Http/Controllers/Api/AuthController.php",
             "routes/api.php",
             "config/cors.php",
             "database/migrations/2026_03_14_015203_create_reports_table.php",

@@ -39,15 +39,15 @@
           <div class="data-cols-wrapper">
             <!-- Data Col 1 -->
             <div class="data-col">
-              <div class="detail-item"><span class="icon">👤</span><span class="label">Driver</span><span class="val">{{ gridData.driver.name }}</span></div>
-              <div class="detail-item gray"><span class="icon">🪪</span><span class="label">Driver RFID</span><span class="val">{{ gridData.device.rfid }}</span></div>
-              <div class="detail-item"><span class="icon">🚗</span><span class="label">Model</span><span class="val">{{ gridData.vehicle.model }}</span></div>
-              <div class="detail-item gray"><span class="icon">📊</span><span class="label">Odometer</span><span class="val"><strong>{{ gridData.stats.total_odometer }} km</strong></span></div>
-              <div class="detail-item"><span class="icon">🔢</span><span class="label">Plate</span><span class="val">{{ selectedVehicle.name }}</span></div>
-              <div class="detail-item gray"><span class="icon">📱</span><span class="label">SIM card number</span><span class="val">{{ gridData.device.sim_number || '---' }}</span></div>
-              <div class="detail-item"><span class="icon">📍</span><span class="label">Status</span><span class="val"><strong>{{ selectedVehicle.status }}</strong> ({{ gridData.sensors.status_time }})</span></div>
-              <div class="detail-item gray"><span class="icon">🆔</span><span class="label">VIN</span><span class="val">{{ gridData.vehicle.vin }}</span></div>
-              <div class="detail-item"><span class="icon">🏠</span><span class="label">Address</span><span class="val truncate" :title="gridData.location.address">{{ gridData.location.address || '---' }}</span></div>
+              <div class="detail-item"><span class="icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><span class="label">Driver</span><span class="val">{{ gridData.driver.name }}</span></div>
+              <div class="detail-item gray"><span class="icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="7" y1="8" x2="7" y2="8"/><line x1="7" y1="12" x2="7" y2="12"/><line x1="7" y1="16" x2="7" y2="16"/></svg></span><span class="label">Driver RFID</span><span class="val">{{ gridData.device.rfid }}</span></div>
+              <div class="detail-item"><span class="icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg></span><span class="label">Model</span><span class="val">{{ gridData.vehicle.model }}</span></div>
+              <div class="detail-item gray"><span class="icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="M2 12h2"/><path d="m4.93 19.07 1.41-1.41"/><path d="M12 22v-2"/><path d="m19.07 19.07-1.41-1.41"/><path d="M22 12h-2"/><path d="m19.07 4.93-1.41 1.41"/><path d="M12 12l4 4"/></svg></span><span class="label">Odometer</span><span class="val"><strong>{{ gridData.stats.total_odometer }} km</strong></span></div>
+              <div class="detail-item"><span class="icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 12h10"/><path d="M7 16h10"/><path d="M7 8h10"/></svg></span><span class="label">Plate</span><span class="val">{{ selectedVehicle.name }}</span></div>
+              <div class="detail-item gray"><span class="icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></span><span class="label">SIM card number</span><span class="val">{{ gridData.device.sim_number || '---' }}</span></div>
+              <div class="detail-item"><span class="icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16z"/><path d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m19.07 4.93-1.41 1.41"/><path d="m6.34 17.66-1.41 1.41"/></svg></span><span class="label">Status</span><span class="val"><strong>{{ selectedVehicle.status }}</strong> ({{ gridData.sensors.status_time }})</span></div>
+              <div class="detail-item gray"><span class="icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18v14H3z"/><path d="M7 9v6"/><path d="M12 9v6"/><path d="M17 9v6"/></svg></span><span class="label">VIN</span><span class="val">{{ gridData.vehicle.vin }}</span></div>
+              <div class="detail-item"><span class="icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span><span class="label">Address</span><span class="val truncate" :title="gridData.location.address">{{ gridData.location.address || '---' }}</span></div>
               <div class="detail-item gray"><span class="icon">⛰️</span><span class="label">Altitude</span><span class="val">{{ gridData.location.altitude || '0' }} m</span></div>
               <div class="detail-item"><span class="icon">🧭</span><span class="label">Angle</span><span class="val">{{ gridData.location.angle || '0' }}°</span></div>
               <div class="detail-item gray"><span class="icon">🗺️</span><span class="label">Nearest zone</span><span class="val truncate">{{ gridData.location.near || '---' }}</span></div>
@@ -55,15 +55,15 @@
 
             <!-- Data Col 2 -->
             <div class="data-col">
-              <div class="detail-item"><span class="icon">📍</span><span class="label">Position</span><a :href="`https://www.google.com/maps?q=${gridData.location.lat},${gridData.location.lng}`" target="_blank" class="val blue-link" style="text-decoration: none;">{{ gridData.location.lat }} &deg;, {{ gridData.location.lng }} &deg;</a></div>
-              <div class="detail-item gray"><span class="icon">🛣️</span><span class="label">road limit</span><span class="val">{{ gridData.device.speed_limit || '---' }} km/h</span></div>
-              <div class="detail-item"><span class="icon">🚀</span><span class="label">Speed</span><span class="val"><strong>{{ gridData.location.speed || '0' }} km/h</strong></span></div>
-              <div class="detail-item gray"><span class="icon">🕒</span><span class="label">Time (position)</span><span class="val">{{ gridData.device.last_date || '---' }}</span></div>
-              <div class="detail-item"><span class="icon">🕒</span><span class="label">Time (server)</span><span class="val">{{ gridData.device.server_date || '---' }}</span></div>
-              <div class="detail-item gray"><span class="icon">🔋</span><span class="label">Battery</span><span class="val">{{ gridData.sensors.battery }}</span></div>
-              <div class="detail-item"><span class="icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16" style="vertical-align: text-bottom; color: #6b7280;"><path d="M7,4V6H10V8H7L5,10V13H3V10H1V18H3V15H5V18H8L10,20H18V16H20V19H23V9H20V12H18V8L16,6H13V4H7Z" /></svg></span><span class="label">Ignition</span><span class="val"><strong>{{ gridData.sensors.ignition }}</strong></span></div>
-              <div class="detail-item gray"><span class="icon">⌛</span><span class="label">Ignition time</span><span class="val">{{ gridData.sensors.ignition_time }}</span></div>
-              <div class="detail-item"><span class="icon">🔌</span><span class="label">Main Power</span><span class="val">{{ gridData.sensors.power }}</span></div>
+              <div class="detail-item"><span class="icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 12 5.07-5.07A10 10 0 0 1 21.14 21.14L16.07 16"/><path d="m11 11 3 3"/><circle cx="11" cy="11" r="8"/></svg></span><span class="label">Position</span><a :href="`https://www.google.com/maps?q=${gridData.location.lat},${gridData.location.lng}`" target="_blank" class="val blue-link" style="text-decoration: none;">{{ gridData.location.lat }} &deg;, {{ gridData.location.lng }} &deg;</a></div>
+              <div class="detail-item gray"><span class="icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></span><span class="label">road limit</span><span class="val">{{ gridData.device.speed_limit || '---' }} km/h</span></div>
+              <div class="detail-item"><span class="icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></span><span class="label">Speed</span><span class="val"><strong>{{ gridData.location.speed || '0' }} km/h</strong></span></div>
+              <div class="detail-item gray"><span class="icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span><span class="label">Time (position)</span><span class="val">{{ gridData.device.last_date || '---' }}</span></div>
+              <div class="detail-item"><span class="icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span><span class="label">Time (server)</span><span class="val">{{ gridData.device.server_date || '---' }}</span></div>
+              <div class="detail-item gray"><span class="icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="16" height="10" rx="2" ry="2"/><line x1="22" y1="11" x2="22" y2="13"/><line x1="6" y1="11" x2="10" y2="11"/><line x1="8" y1="9" x2="8" y2="13"/></svg></span><span class="label">Battery</span><span class="val">{{ gridData.sensors.battery }}</span></div>
+              <div class="detail-item"><span class="icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg></span><span class="label">Ignition</span><span class="val"><strong>{{ gridData.sensors.ignition }}</strong></span></div>
+              <div class="detail-item gray"><span class="icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span><span class="label">Ignition time</span><span class="val">{{ gridData.sensors.ignition_time }}</span></div>
+              <div class="detail-item"><span class="icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="16" height="10" rx="2" ry="2"/><line x1="22" y1="11" x2="22" y2="13"/><path d="M6 12h4"/></svg></span><span class="label">Main Power</span><span class="val">{{ gridData.sensors.power }}</span></div>
             </div>
 
 
@@ -74,29 +74,29 @@
         <div class="widgets-horizontal-section scrollbar-custom-h">
           <!-- Widget: Driving Behavior -->
           <div class="pro-widget">
-            <div class="pro-widget-header" style="background: #e2f1fa; color: #3f6f99;">
-              <span class="icon" style="color: #4b1a43; font-weight: 800;">👤</span> Driving behavior
+            <div class="pro-widget-header behavior-header">
+              <span class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg></span> Driving behavior
             </div>
-            <div class="pro-widget-body scrollbar-custom" style="padding: 15px; margin: 0px; border: 1px solid var(--border-color); background: var(--panel-bg); border-top: none;">
+            <div class="pro-widget-body behavior-body scrollbar-custom">
               
-              <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                <div style="flex: 1; background: #3f6f99; color: white; border-radius: 6px; padding: 12px; text-align: center;">
-                  <div style="font-size: 13px; font-weight: 500;">Avg Speed</div>
-                  <div style="font-size: 14px; margin-top: 2px;">{{ gridData.stats.avg_speed || 0 }} km/h</div>
+              <div class="behavior-badges-row">
+                <div class="val-badge blue">
+                  <div class="b-label">Avg Speed</div>
+                  <div class="b-val">{{ gridData.stats.avg_speed || 0 }} km/h</div>
                 </div>
-                <div style="flex: 1; background: #d32f2f; color: white; border-radius: 6px; padding: 12px; text-align: center;">
-                   <div style="font-size: 13px; font-weight: 500;">MAX Speed</div>
-                   <div style="font-size: 14px; margin-top: 2px;">{{ gridData.stats.top_speed || 0 }} km/h</div>
+                <div class="val-badge red">
+                   <div class="b-label">MAX Speed</div>
+                   <div class="b-val">{{ gridData.stats.top_speed || 0 }} km/h</div>
                 </div>
               </div>
 
               <!-- Behaviors List -->
-              <div style="border: 1px solid var(--border-color); border-radius: 6px; background: var(--panel-bg);">
-                <div style="padding: 10px 15px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between;">
-                  <span style="color: var(--text-dim);">Harsh Braking</span><span style="color: var(--text-main);">No</span>
+              <div class="behavior-list-card">
+                <div class="behavior-row">
+                  <span class="b-name">Harsh Braking</span><span class="b-state">No</span>
                 </div>
-                <div style="padding: 10px 15px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between;">
-                  <span style="color: var(--text-dim);">Sharp Cornering</span><span style="color: var(--text-main);">No</span>
+                <div class="behavior-row">
+                  <span class="b-name">Sharp Cornering</span><span class="b-state">No</span>
                 </div>
                 <div style="padding: 10px 15px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between;">
                   <span style="color: var(--text-dim);">Harsh Acceleration</span><span style="color: var(--text-main);">No</span>
@@ -263,11 +263,11 @@
         </div>
         
         <div class="messages-footer">
-          <div class="footer-left" style="display: flex; align-items: center; gap: 12px; position: relative;">
+          <div class="footer-left" style="display: flex; align-items: center; gap: 15px; position: relative;">
             <button class="footer-refresh-btn" title="Refresh" @click="fetchMessages">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12,18A6,6 0 0,1 6,12C6,11 6.25,10.03 6.7,9.2L5.24,7.74C4.46,8.97 4,10.43 4,12A8,8 0 0,0 12,20V23L16,19L12,15M12,4V1L8,5L12,9V6A6,6 0 0,1 18,12C18,13 17.75,13.97 17.3,14.8L18.76,16.26C19.54,15.03 20,13.57 20,12A8,8 0 0,0 12,4Z"/></svg>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12,18A6,6 0 0,1 6,12C6,11 6.25,10.03 6.7,9.2L5.24,7.74C4.46,8.97 4,10.43 4,12A8,8 0 0,0 12,20V23L16,19L12,15M12,4V1L8,5L12,9V6A6,6 0 0,1 18,12C18,13 17.75,13.97 17.3,14.8L18.76,16.26C19.54,15.03 20,13.57 20,12A8,8 0 0,0 12,4Z"/></svg>
             </button>
-            <span style="cursor: pointer; font-size: 16px; font-weight: bold; color: var(--text-dim); line-height: 1;" title="More Options" @click.stop="showMessagesActionMenu = !showMessagesActionMenu">...</span>
+            <span class="action-trigger-dots" title="More Options" @click.stop="showMessagesActionMenu = !showMessagesActionMenu">...</span>
             
             <div v-show="showMessagesActionMenu" v-click-outside="() => showMessagesActionMenu = false" class="messages-action-menu">
               <button class="delete-btn" @click="deleteSelectedMessages">
@@ -641,39 +641,45 @@ watch(() => props.selectedVehicle?.imei, () => {
 <style scoped>
 /* Theme Variables */
 .vehicle-details-panel {
-  --panel-bg: #0f172a;
+  --panel-bg: #0b1220;
   --header-bg: #1e293b;
   --tab-active-bg: transparent;
-  --tab-active-text: #3882f6;
-  --tab-inactive-text: #94a3b8;
+  --tab-active-text: #3b82f6;
+  --tab-inactive-text: #64748b;
   --text-main: #f8fafc;
   --text-dim: #94a3b8;
-  --border-color: #334155;
-  --row-gray-bg: rgba(30, 41, 59, 0.5);
+  --border-color: rgba(255, 255, 255, 0.06);
+  --row-gray-bg: rgba(255, 255, 255, 0.03);
   --widget-header-bg: #1e293b;
-  --widget-header-text: #3882f6;
-  --widget-border: #334155;
-  --scrollbar-thumb: #475569;
+  --widget-header-text: #3b82f6;
+  --widget-border: rgba(255, 255, 255, 0.08);
+  --scrollbar-thumb: #334155;
   --accent: #3b82f6;
-  --accent-soft: rgba(59, 130, 246, 0.1);
+  --accent-soft: rgba(59, 130, 246, 0.12);
+  --badge-blue: #3b82f6;
+  --badge-red: #f43f5e;
+  --widget-sub-bg: rgba(0, 0, 0, 0.2);
 }
 
 .vehicle-details-panel.light-theme {
   --panel-bg: #ffffff;
   --header-bg: #f8fafc;
   --tab-active-bg: transparent;
-  --tab-active-text: #3f6f99;
+  --tab-active-text: #2563eb;
   --tab-inactive-text: #64748b;
   --text-main: #0f172a;
   --text-dim: #64748b;
   --border-color: #e2e8f0;
-  --row-gray-bg: #f1f5f9;
+  --row-gray-bg: #f8fafc;
   --widget-header-bg: #eff6ff;
-  --widget-header-text: #3f6f99;
+  --widget-header-text: #2563eb;
   --widget-border: #e2e8f0;
   --scrollbar-thumb: #cbd5e1;
-  --accent: #3f6f99;
-  --accent-soft: rgba(63, 111, 153, 0.1);
+  --accent: #2563eb;
+  --accent-soft: rgba(37, 99, 235, 0.08);
+  --badge-blue: #2563eb;
+  --badge-red: #dc2626;
+  --widget-sub-bg: #f8fafc;
 }
 
 .vehicle-details-panel {
@@ -820,20 +826,82 @@ watch(() => props.selectedVehicle?.imei, () => {
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-.pro-widget-header {
-  background: var(--widget-header-bg);
-  color: var(--widget-header-text);
-  padding: 10px 15px;
-  font-weight: 700;
-  font-size: 0.9rem;
-  border-bottom: 1px solid var(--widget-border);
-  min-height: 40px; /* Secure header space */
+.behavior-header {
+  background: var(--widget-header-bg) !important;
+  color: var(--widget-header-text) !important;
 }
 
-.pro-widget-body { 
-  padding: 15px; 
-  flex: 1; 
-  overflow-y: auto; /* Enable scroll if content exceeds */
+.behavior-header .icon {
+  color: var(--text-main);
+  font-weight: 800;
+}
+
+.behavior-body {
+  padding: 15px;
+  margin: 0px;
+  border: 1px solid var(--border-color);
+  background: var(--panel-bg);
+  border-top: none;
+}
+
+.behavior-badges-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.val-badge {
+  flex: 1;
+  color: white;
+  border-radius: 6px;
+  padding: 12px;
+  text-align: center;
+}
+
+.val-badge.blue {
+  background: var(--badge-blue);
+}
+
+.val-badge.red {
+  background: var(--badge-red);
+}
+
+.val-badge .b-label {
+  font-size: 0.75rem;
+  opacity: 0.9;
+  margin-bottom: 4px;
+}
+
+.val-badge .b-val {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.behavior-list-card {
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--widget-sub-bg);
+}
+
+.behavior-row {
+  padding: 10px 15px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.behavior-row:last-child {
+  border-bottom: none;
+}
+
+.behavior-row .b-name {
+  color: var(--text-dim);
+}
+
+.behavior-row .b-state {
+  color: var(--text-main);
+  font-weight: 600;
 }
 
 .empty-widget-body {
@@ -850,45 +918,13 @@ watch(() => props.selectedVehicle?.imei, () => {
   flex: 1;
 }
 
-.behavior-badges-row { display: flex; gap: 10px; margin-bottom: 15px; }
-.val-badge {
-  flex: 1;
-  padding: 10px;
-  border-radius: 6px;
-  color: #fff;
-  text-align: center;
-}
-.val-badge.blue { background: #3f6f99; }
-.val-badge.red { background: #dc2626; }
-.val-badge .b-label { font-size: 0.75rem; opacity: 0.9; margin-bottom: 4px; }
-.val-badge .b-val { font-size: 0.95rem; font-weight: 700; }
-
-.data-row-pro {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--border-color);
-  font-size: 0.85rem;
-  color: var(--text-main);
-}
-.data-row-pro:last-child { border-bottom: none; }
-.data-row-pro span { color: var(--text-dim); }
-
-.no-events { text-align: center; color: var(--text-dim); padding: 20px; font-style: italic; }
-
-/* Scrollbars */
-.scrollbar-custom::-webkit-scrollbar { width: 6px; }
-.scrollbar-custom::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
-
-.scrollbar-custom-h::-webkit-scrollbar { height: 8px; }
-.scrollbar-custom-h::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
-
 .loading-overlay {
   position: absolute; top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0,0,0,0.1); display: flex; justify-content: center; align-items: center;
 }
+
 .spinner {
-  width: 30px; height: 30px; border: 4px solid #f3f3f3; border-top: 4px solid #3f6f99;
+  width: 30px; height: 30px; border: 4px solid #f3f3f3; border-top: 4px solid var(--accent);
   border-radius: 50%; animation: spin 1s linear infinite;
 }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -1010,6 +1046,72 @@ watch(() => props.selectedVehicle?.imei, () => {
   font-size: 13px;
   color: var(--text-dim);
 }
+
+.footer-refresh-btn {
+  background: var(--accent-soft);
+  border: 1px solid var(--border-color);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--accent);
+  transition: all 0.2s;
+  padding: 0;
+  outline: none;
+}
+.footer-refresh-btn:hover { 
+  background: var(--accent); 
+  color: #fff;
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px var(--accent-soft);
+}
+
+.action-trigger-dots {
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--text-dim);
+  line-height: 1;
+  padding: 4px 10px;
+  border-radius: 6px;
+  transition: all 0.2s;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.action-trigger-dots:hover {
+  background: var(--row-gray-bg);
+  color: var(--text-main);
+}
+
+.delete-btn {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  outline: none;
+}
+.delete-btn:hover { 
+  background: rgba(239, 68, 68, 0.1); 
+  color: #ef4444; 
+}
+.delete-btn svg { opacity: 0.8; }
+.delete-btn:hover svg { opacity: 1; }
 
 .pagination-controls {
   display: flex;

@@ -12,6 +12,7 @@ async function deploySingleFile() {
         console.log("Connecting to Backend FTP...");
         await client.access({
             host: "167.235.1.40",
+            port: 45555,
             user: "vue_back",
             password: "KSsJrpyizBmf5mZA",
             secure: false
@@ -19,8 +20,8 @@ async function deploySingleFile() {
         
         console.log("Connected. Uploading specific modified file...");
         
-        const localFile = path.join(__dirname, "fleetriteAPI", "app", "Services", "Reports", "DrivesStopsReportService.php");
-        const remotePath = "/app/Services/Reports/DrivesStopsReportService.php";
+        const localFile = path.join(__dirname, "fleetriteAPI", "app", "Http", "Controllers", "Api", "TrackingController.php");
+        const remotePath = "/app/Http/Controllers/Api/TrackingController.php";
         
         await client.uploadFrom(localFile, remotePath);
         

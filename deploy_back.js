@@ -12,6 +12,7 @@ async function deploy() {
         console.log("Connecting to Backend FTP...");
         await client.access({
             host: "167.235.1.40",
+            port: 45555,
             user: "vue_back",
             password: "KSsJrpyizBmf5mZA",
             secure: false

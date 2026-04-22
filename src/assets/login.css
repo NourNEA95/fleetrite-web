@@ -1,0 +1,347 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+    --login-primary: #0055ff;
+    --login-bg-side: linear-gradient(165deg, rgba(4, 7, 18, 0.90) 0%, rgba(8, 13, 26, 0.85) 50%, rgba(12, 18, 32, 0.70) 100%);
+    --login-text: #ffffff;
+    --login-text-muted: rgba(255, 255, 255, 0.5);
+    --login-font: 'Outfit', sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+.login-wrapper {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    background-color: #040712;
+    background-image: url('../assets/login-bg-new.png'); /* Switching to high-quality 4K PNG */
+    background-size: cover; /* Use cover for 4K assets to ensure sharp scaling */
+    background-position: center; /* Center-right focus */
+    background-repeat: no-repeat;
+    font-family: var(--login-font);
+    color: var(--login-text);
+    overflow: hidden;
+    position: relative;
+    image-rendering: auto;
+    filter: none;
+}
+
+/* 1. LEFT PANEL WIDTH - Increased to match Figma ratio (~32%) */
+.login-left {
+    width: 33%; /* Match visual footprint in Image 1 */
+    min-width: 420px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 60px 50px;
+    z-index: 10;
+    background: var(--login-bg-side);
+    backdrop-filter: blur(22px) saturate(180%); /* Item 2: Luminous glass effect */
+    position: relative;
+    box-shadow: 25px 0 80px rgba(0,0,0,0.9);
+    border-right: 1px solid rgba(255, 255, 255, 0.08); /* Subtle glass edge */
+}
+
+/* 3. TOP LOGO - Larger, white, more breathing space */
+.brand-logo-final {
+    width: 100%;
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: center;
+}
+
+.brand-logo-final img {
+    height: 140px; /* Increased size */
+    width: auto;
+    display: block;
+    object-fit: contain;
+}
+
+/* 4. FORM POSITIONING - Vertical/Horizontal balance */
+.login-card {
+    width: 100%;
+    max-width: 320px; /* Keep form compact inside wide sidebar */
+    margin: auto;
+}
+
+.form-group {
+    margin-bottom: 26px;
+}
+
+/* 5. LABELS - Match size, weight, and distance sits above */
+.form-group label {
+    display: block;
+    font-size: 14.5px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--login-text-muted);
+}
+
+/* 6. INPUT FIELDS - Pill look, specific height/radius */
+.form-group input {
+    width: 100%;
+    height: 52px;
+    background: #f0f5ff; /* Match the soft light pill color */
+    border: none;
+    border-radius: 50px;
+    padding: 0 25px;
+    color: #1a202c;
+    font-size: 15px;
+    font-weight: 500;
+    outline: none;
+    transition: all 0.2s;
+}
+
+/* 7. CHECKBOX ROW */
+.checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 22px 5px 30px;
+    cursor: pointer;
+}
+
+.checkbox-row input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--login-primary);
+}
+
+.checkbox-row span {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: white;
+}
+
+/* 8. SIGN IN BUTTON - Match visual weight */
+.btn-signin {
+    width: 100%;
+    height: 56px;
+    background: var(--login-primary);
+    border: none;
+    border-radius: 50px;
+    color: white;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 85, 255, 0.4);
+    transition: all 0.2s;
+}
+
+/* 9. OR DIVIDER */
+.login-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 35px 0;
+    color: rgba(255,255,255,0.3);
+    font-size: 13.5px;
+    font-weight: 700;
+}
+
+.login-divider::before,
+.login-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15); /* Match line length and weight */
+}
+
+.login-divider:not(:empty)::before { margin-right: 1.5em; }
+.login-divider:not(:empty)::after { margin-left: 1.5em; }
+
+/* 10. SIGN UP + RECOVERY BUTTONS - Specific proportions */
+.extra-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+.btn-extra {
+    height: 50px;
+    width: 100%;
+    background: #e2ebff;
+    border: none;
+    border-radius: 50px;
+    color: #002d84;
+    font-size: 13.5px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+/* 11 & 12. LOWER-LEFT APPS / LOWER-RIGHT LANG */
+.sidebar-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding-top: 40px;
+}
+
+.store-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.store-btn {
+    height: 32px;
+    cursor: pointer;
+}
+
+.lang-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: white;
+    font-size: 14.5px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* 13. RIGHT PANEL - Cinematic Depth & Contrast */
+.login-right {
+    flex: 1;
+    height: 100vh;
+    background: transparent;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+}
+
+.login-right::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    /* Soft darkness overlay for depth */
+    background: rgba(0, 0, 0, 0.15);
+    z-index: -1;
+}
+
+/* 14. HERO CONTENT BLOCK - Center & Compact */
+.slider-container {
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+    position: relative;
+}
+
+.hero-branding {
+    margin-bottom: 30px;
+    font-size: 48px; /* Item 14: Final scale check */
+    font-weight: 900; /* Item 14: Ultimate weight */
+    letter-spacing: 2px;
+    color: white;
+    text-transform: uppercase;
+}
+
+.slide-description {
+    font-size: 22px;
+    color: white;
+    line-height: 1.45;
+    font-weight: 500;
+    max-width: 520px; /* Item 14: Exact wrapping control */
+    margin: 0 auto 40px;
+}
+
+/* 16. READ MORE BUTTON - Weight match */
+.btn-readmore {
+    display: inline-block;
+    padding: 14px 45px;
+    background: white;
+    border: none;
+    border-radius: 50px;
+    color: #1a202c;
+    font-size: 15.5px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* 15. HERO ARROWS - Positioned closer to content */
+.slider-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 38px;
+    height: 38px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1a202c;
+    cursor: pointer;
+    z-index: 20;
+}
+
+.slider-prev { left: -60px; }
+.slider-next { right: -60px; }
+
+/* 17. BOTTOM-RIGHT FLEETRITE BRANDING */
+.bottom-brand {
+    position: absolute;
+    bottom: 55px;
+    right: 55px;
+    z-index: 20;
+    text-align: right;
+}
+
+.brand-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.brand-row svg {
+    width: 36px;
+    height: 36px;
+}
+
+.brand-row span {
+    font-weight: 900;
+    font-size: 44px; /* Item 17: Increase branding presence */
+    letter-spacing: -0.5px;
+}
+
+.brand-slogan {
+    font-size: 15.5px;
+    font-weight: 700;
+    color: white;
+    margin-top: 5px;
+}
+
+/* 18. FLOATING GLASS SQUARE - Exact positioning */
+.hero-glass-square {
+    position: absolute;
+    bottom: 12%;
+    left: 42%;
+    width: 95px;
+    height: 95px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+}
+
+/* RTL Layout */
+.rtl { direction: rtl; }
+.rtl .login-left { box-shadow: -25px 0 80px rgba(0,0,0,0.9); }
+.rtl .lang-toggle { flex-direction: row-reverse; }
+
+@media (max-width: 1200px) {
+    .login-left { width: 40%; min-width: 400px; }
+}
+
+@media (max-width: 1024px) {
+    .login-wrapper { flex-direction: column; overflow-y: auto; }
+    .login-left { width: 100%; min-height: 100vh; padding: 40px 30px; }
+    .login-right { display: none; }
+}

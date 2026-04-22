@@ -22,71 +22,82 @@
         <div class="drag-bar"></div>
       </div>
 
-      <!-- Panel Tab Bar (Fleet / Archive) -->
-      <div class="panel-tabs" v-show="isPanelOpen">
+      <!-- Modern Panel Tab Bar (Fleet / Events / Places / Archive) -->
+      <div class="panel-tabs-modern" v-show="isPanelOpen">
         <button 
-          class="panel-tab" 
+          class="panel-tab-pill" 
           :class="{ active: activeMainTab === 'Fleet' }" 
           @click="activeMainTab = 'Fleet'"
+          title="Fleet"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="1" y="3" width="15" height="13"></rect>
-            <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
-            <circle cx="5.5" cy="18.5" r="2.5"></circle>
-            <circle cx="18.5" cy="18.5" r="2.5"></circle>
-          </svg>
-          Fleet
+          <div class="pill-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" class="nav-icon" :style="{ color: activeMainTab === 'Fleet' ? '#ffffff' : '#64748b' }">
+               <path d="M21 3L3 10.5L10.5 13.5L13.5 21L21 3Z" fill="currentColor"/>
+            </svg>
+          </div>
+          <span v-if="activeMainTab === 'Fleet'" class="pill-label">Fleet</span>
         </button>
 
         <button 
-          class="panel-tab" 
+          class="panel-tab-pill" 
           :class="{ active: activeMainTab === 'Events' }" 
           @click="activeMainTab = 'Events'"
+          title="Events"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-          </svg>
-          Events
+          <div class="pill-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" class="nav-icon" :style="{ color: activeMainTab === 'Events' ? '#ffffff' : '#64748b' }">
+              <rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="2.5"/>
+              <path d="M7 9h10M7 13h10M7 17h6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span v-if="activeMainTab === 'Events'" class="pill-label">Events</span>
         </button>
 
         <button 
-          class="panel-tab" 
+          class="panel-tab-pill" 
           :class="{ active: activeMainTab === 'Places' }" 
           @click="activeMainTab = 'Places'"
+          title="Places"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-            <circle cx="12" cy="10" r="3"></circle>
-          </svg>
-          Places
+          <div class="pill-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" class="nav-icon" :style="{ color: activeMainTab === 'Places' ? '#ffffff' : '#64748b' }">
+              <path d="M12 21s-7-5.5-7-12a7 7 0 1 1 14 0c0 6.5-7 12-7 12z" fill="currentColor"/>
+              <circle cx="12" cy="9" r="2.5" fill="#fff" :opacity="activeMainTab === 'Places' ? 1 : 0.4"/>
+            </svg>
+          </div>
+          <span v-if="activeMainTab === 'Places'" class="pill-label">Places</span>
         </button>
 
         <button 
-          class="panel-tab" 
+          class="panel-tab-pill" 
           :class="{ active: activeMainTab === 'Archive' }" 
           @click="activeMainTab = 'Archive'"
+          title="Archive"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 16 14"></polyline>
-          </svg>
-          Archive
+          <div class="pill-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="nav-icon" :style="{ color: activeMainTab === 'Archive' ? '#ffffff' : '#94a3b8' }">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" fill="currentColor" opacity="0.4"/>
+              <path d="M14 2v6h6" stroke="currentColor" stroke-width="2"/>
+              <circle cx="11" cy="14" r="3" stroke="currentColor" stroke-width="2" fill="#fff"/>
+              <line x1="13" y1="16" x2="16" y2="19" stroke="currentColor" stroke-width="2"/>
+            </svg>
+          </div>
+          <span v-if="activeMainTab === 'Archive'" class="pill-label">Archive</span>
         </button>
       </div>
 
       <FleetPanel 
         v-if="activeMainTab === 'Fleet'"
         :is-panel-open="isPanelOpen"
-        v-model:search-query="searchQuery"
+        :fleet-data="fleetData"
+        v-model:searchQuery="searchQuery"
         v-model:filter="filter"
         :filtered-objects="filteredObjects"
         :selected-imei="selectedImei"
         @toggle-panel="togglePanel"
-        @select-vehicle="selectVehicle"
-        @open-history="openHistory"
-        @follow-vehicle="handleFollowVehicle"
-        @follow-new-window="handleFollowNewWindow"
+        @select-vehicle="handleSelectVehicle"
+        @open-history="handleOpenHistory"
+        @follow-vehicle="openFollowOptionsModal"
         @edit-vehicle="handleEditVehicle"
         @share-position="handleSharePosition"
         @send-command="handleSendCommand"
@@ -135,15 +146,116 @@
     <!-- Map Area -->
     <main class="map-area">
       <div id="leafletMap" class="map-container"></div>
+      
+      <!-- Follow Options Modal -->
+      <FollowOptionsModal
+        v-if="showFollowOptionsModal"
+        :is-visible="showFollowOptionsModal"
+        :initial-vehicle="initialFollowVehicle"
+        :fleet-data="fleetData"
+        @close="showFollowOptionsModal = false"
+        @action-inline="triggerFollowInline"
+        @action-window="triggerFollowWindow"
+      />
 
       <!-- User Profile Badge -->
       <div class="user-badge" @click="goProfile">
         <span class="user-name">Hello, <strong>{{ auth.user?.username || 'Guest' }}</strong></span>
-        <div class="user-avatar-mini">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-            <circle cx="12" cy="7" r="4"></circle>
-          </svg>
+      </div>
+
+      <!-- Map Overlays (Vue Components) -->
+      <MapZones 
+        v-if="map" 
+        :map="map" 
+        :visible="showZones" 
+      />
+      
+      <template v-if="activeMainTab !== 'Archive' && map">
+        <template v-for="g in markerGroups" :key="g.id">
+          <VehicleMarker 
+            v-if="g.type === 'single'"
+            :map="map"
+            :vehicle="g.vehicle"
+            :is-selected="selectedImei === g.vehicle.imei"
+            :icon-type="iconType"
+            :status-colors="statusColors"
+            @select="handleSelectVehicle"
+          />
+          <GroupMarker
+            v-else
+            :map="map"
+            :vehicles="g.vehicles"
+            :lat="g.lat"
+            :lng="g.lng"
+            :is-selected="g.vehicles.some(v => v.imei === selectedImei)"
+            :icon-type="iconType"
+            :status-colors="statusColors"
+            :is-dark-mode="themeStore.isDarkMode"
+            @select="handleSelectVehicle"
+          />
+        </template>
+      </template>
+
+      <!-- Map Controls (Custom Premium Layout) -->
+      <div class="custom-map-controls">
+        <!-- Main Tool Pill -->
+        <div class="control-pill tools-pill">
+          <!-- Target / Center on Fleet -->
+          <button class="tool-btn" @click="centerMap" title="Center on Fleet">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <rect x="3" y="3" width="18" height="18" rx="5" />
+              <circle cx="12" cy="12" r="4" />
+            </svg>
+          </button>
+          
+          <div class="tool-divider"></div>
+
+          <!-- Zones Toggle -->
+          <button class="tool-btn blue-btn" :class="{ active: showZones }" @click="showZones = !showZones" title="Toggle Zones">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <rect x="4" y="4" width="16" height="16" rx="3" stroke-dasharray="3 2" />
+              <circle cx="12" cy="12" r="3" />
+              <path d="M12 2v2M12 20v2M2 12h2M20 12h2" />
+            </svg>
+          </button>
+
+          <div class="tool-divider"></div>
+
+          <!-- Icon Type Toggle -->
+          <button class="tool-btn blue-btn" @click="iconType = iconType === 'car' ? 'arrow' : 'car'" :title="iconType === 'car' ? 'Switch to Arrows' : 'Switch to Cars'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+              <path d="M3 8 L12 19 L21 8" />
+            </svg>
+          </button>
+
+          <div class="tool-divider"></div>
+
+          <!-- Print Map -->
+          <button class="tool-btn" @click="printMap" title="Print Map">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <path d="M6 9V4h12v5"></path>
+              <path d="M5 9h14v8h-4v3H9v-3H5V9z"></path>
+              <line x1="8" y1="12" x2="16" y2="12"></line>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Zoom Pill -->
+        <div class="control-pill zoom-pill">
+          <button class="tool-btn" @click="mapZoomIn" title="Zoom In">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <line x1="12" y1="6" x2="12" y2="18"></line>
+              <line x1="6" y1="12" x2="18" y2="12"></line>
+            </svg>
+          </button>
+          
+          <div class="tool-divider"></div>
+
+          <button class="tool-btn" @click="mapZoomOut" title="Zoom Out">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <line x1="6" y1="12" x2="18" y2="12"></line>
+            </svg>
+          </button>
         </div>
       </div>
       
@@ -237,10 +349,14 @@ import EventsPanel from './panels/EventsPanel.vue';
 import ArchivePanel from './panels/ArchivePanel.vue';
 import VehicleDetails from './panels/VehicleDetails.vue';
 import FollowPopup from './panels/FollowPopup.vue';
+import FollowOptionsModal from './modals/FollowOptionsModal.vue';
 import EditObjectModal from './modals/EditObjectModal.vue';
 import SharePositionModal from './modals/SharePositionModal.vue';
 import ObjectControlModal from './modals/ObjectControlModal.vue';
 import ReportsModal from './modals/ReportsModal.vue';
+import VehicleMarker from './map/VehicleMarker.vue';
+import GroupMarker from './map/GroupMarker.vue';
+import MapZones from './map/MapZones.vue';
 
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -272,7 +388,9 @@ const markersGroup = ref(null);
 
 const searchQuery = ref('');
 const filter = ref('All');
-// showReportsModal is now managed by reportsStore.showMainModal
+const showZones = ref(false);
+const iconType = ref('car'); // 'car' or 'arrow'
+const currentZoom = ref(11);
 
 function handleNavAction(action) {
   if (action === 'reports') {
@@ -456,12 +574,7 @@ watch(activeMainTab, async (newTab) => {
 
   // Handle switching back to Fleet or Events
   if (newTab === 'Fleet') {
-    if (map.value && markersGroup.value) {
-      if (!map.value.hasLayer(markersGroup.value)) {
-        markersGroup.value.addTo(map.value);
-      }
-    }
-    drawMarkers();
+    // Markers are handled declaratively by VehicleMarker components
   }
 
   if (newTab === 'Events') {
@@ -521,16 +634,57 @@ const filteredObjects = computed(() => {
   });
 });
 
-function initMap() {
-  map.value = L.map('leafletMap').setView([29.3759, 47.9774], 11);
+// Implementation of Marker Clustering/Grouping (Currently Disabled for Stability)
+const markerGroups = computed(() => {
+  if (activeMainTab.value === 'Archive' || !map.value) return [];
+  
+  // Return all vehicles as standalone markers for now to ensure console stability
+  return filteredObjects.value.map(v => ({
+    type: 'single',
+    id: v.imei,
+    vehicle: v
+  }));
+});
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+// Custom Map Tool Methods
+function mapZoomIn() {
+  if (map.value) map.value.zoomIn();
+}
+
+function mapZoomOut() {
+  if (map.value) map.value.zoomOut();
+}
+
+function centerMap() {
+  if (!map.value || fleetData.value.length === 0) return;
+  const bounds = L.latLngBounds(fleetData.value.map(v => [v.lat, v.lng]));
+  if (bounds.isValid()) {
+    map.value.fitBounds(bounds, { padding: [50, 50] });
+  }
+}
+
+function printMap() {
+  window.print();
+}
+
+function initMap() {
+  map.value = L.map('leafletMap', { zoomControl: false }).setView([29.3759, 47.9774], 11);
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     maxZoom: 19,
     attribution: '© OpenStreetMap contributors'
   }).addTo(map.value);
 
-  markersGroup.value = L.featureGroup().addTo(map.value);
-  drawMarkers();
+  // Register animation locks
+  map.value.on('zoomstart', onMapMoveStart);
+  map.value.on('zoomend', onMapMoveEnd);
+  map.value.on('movestart', onMapMoveStart);
+  map.value.on('moveend', onMapMoveEnd);
+
+  // Register zoom tracker
+  map.value.on('zoomend', () => {
+    currentZoom.value = map.value.getZoom();
+  });
 }
 
 const markersMap = {};
@@ -566,97 +720,56 @@ function createCarIcon(color, heading = 0) {
   return icon;
 }
 
-function drawMarkers() {
-  if (!markersGroup.value || !map.value || activeMainTab.value === 'Archive') return;
+// Watcher for real-time following
+watch(fleetData, (newFleet) => {
+  if (selectedImei.value && map.value) {
+    // Basic safety: if the map is currently animating (flyTo/zoom) or being moved, skip
+    if (map.value._animating || isMapAnimating.value) return;
 
-  if (map.value._animatingZoom) {
-    setTimeout(drawMarkers, 500);
-    return;
-  }
-
-  fleetData.value.forEach(obj => {
-    if (markersMap[obj.imei]) {
-      const marker = markersMap[obj.imei];
-      marker.setLatLng([obj.lat || 0, obj.lng || 0]);
-
-      const newColor = statusColors.value[obj.status] || statusColors.value.Offline;
-
-      const newHeading = obj.heading != null ? obj.heading : 0;
-      const oldColor = marker.options.icon.options._carColor;
-      const oldHeading = marker.options.icon.options._carHeading;
-
-      if (oldColor !== newColor || oldHeading !== newHeading) {
-        marker.setIcon(createCarIcon(newColor, newHeading));
-      }
-
-      marker.setPopupContent(`<b>${obj.name}</b><br>IMEI: ${obj.imei}<br>Speed: ${Math.round(obj.speed || 0)} km/h`);
-
-      if (selectedImei.value === obj.imei) {
-        selectedVehicle.value = obj;
-        if (!map.value._animatingZoom && selectedVehicle.value) {
-          map.value.panTo([obj.lat, obj.lng], { animate: true, duration: 1.0 });
-        }
-      }
-
-      if (followPopupVehicle.value && followPopupVehicle.value.imei === obj.imei) {
-        followPopupVehicle.value = obj;
-      }
-    } else {
-      const markerColor = statusColors.value[obj.status] || statusColors.value.Offline;
-
-      const icon = createCarIcon(markerColor, obj.heading != null ? obj.heading : 0);
-
-      const marker = L.marker([obj.lat || 0, obj.lng || 0], { icon })
-        .bindPopup(`<b>${obj.name}</b><br>IMEI: ${obj.imei}<br>Speed: ${Math.round(obj.speed || 0)} km/h`)
-        .addTo(markersGroup.value);
-
-      marker.on('click', () => {
-        selectVehicle(obj);
-      });
-
-      markersMap[obj.imei] = marker;
-
-      if (followedImei.value === obj.imei && !map.value._animatingZoom) {
-        map.value.panTo([obj.lat, obj.lng], { animate: true, duration: 1.0 });
-      }
-
-      if (followPopupVehicle.value && followPopupVehicle.value.imei === obj.imei) {
-        followPopupVehicle.value = obj;
-      }
-
-      if (selectedImei.value === obj.imei) {
-        selectedVehicle.value = obj;
-        if (!map.value._animatingZoom && selectedVehicle.value && !followedImei.value) {
-          map.value.panTo([obj.lat, obj.lng], { animate: true, duration: 1.0 });
-        }
+    const selected = newFleet.find(v => v.imei === selectedImei.value);
+    if (selected) {
+      const latlng = [selected.lat, selected.lng];
+      const bounds = map.value.getBounds();
+      
+      // USER REQUEST: Only center if vehicle goes outside the current visible screen
+      if (!bounds.contains(latlng)) {
+        map.value.panTo(latlng);
       }
     }
-  });
-}
+  }
+}, { deep: true });
 
-function selectVehicle(obj) {
+function handleSelectVehicle(obj) {
   selectedImei.value = obj.imei;
   selectedVehicle.value = obj;
-  map.value.flyTo([obj.lat, obj.lng], 16, { animate: true, duration: 1.5 });
+  map.value.flyTo([obj.lat, obj.lng], 15, { animate: true, duration: 1.5 });
 
   if (markersMap[obj.imei]) {
     markersMap[obj.imei].openPopup();
   }
 }
 
-function handleFollowVehicle(obj) {
+const showFollowOptionsModal = ref(false);
+const initialFollowVehicle = ref(null);
+
+function openFollowOptionsModal(obj) {
+  initialFollowVehicle.value = obj;
+  showFollowOptionsModal.value = true;
+}
+
+function triggerFollowInline(obj) {
   followPopupVehicle.value = obj;
   showToast(`Follow started for ${obj.name}`, 'info');
 }
 
-function handleFollowNewWindow(obj) {
+function triggerFollowWindow(obj) {
   const routeParams = router.resolve({ path: '/follow/' + obj.imei });
   window.open(routeParams.href, '_blank', 'width=1000,height=700,menubar=no,toolbar=no,location=no,status=no');
 }
 
 function closePanel() {
   selectedVehicle.value = null;
-  selectedImei.value = null;
+  // We DO NOT set selectedImei to null here to keep the tail visible on the map
 }
 
 function handleEditVehicle(obj) {
@@ -707,7 +820,7 @@ function logout() {
   router.push('/login');
 }
 
-function openHistory(data) {
+function handleOpenHistory(data) {
   const obj = data.obj || data;
   const period = data.period || 'today';
 
@@ -888,15 +1001,17 @@ function drawHistoryPath() {
 
   const latlngs = historyData.value.map(p => [p.lat, p.lng]);
 
+  const historyColor = themeStore.isDarkMode ? '#36ffb4' : '#10b981';
+
   historyPolyline = L.polyline(latlngs, {
-    color: '#4f7cff',
+    color: historyColor,
     weight: 4,
     opacity: 0.8,
     dashArray: '5, 10'
   }).addTo(map.value);
 
   const firstPoint = historyData.value[0];
-  const icon = createCarIcon('#4f7cff', firstPoint.angle || 0);
+  const icon = createCarIcon(historyColor, firstPoint.angle || 0);
   historyMarker = L.marker([firstPoint.lat, firstPoint.lng], { icon }).addTo(map.value);
 
   map.value.fitBounds(historyPolyline.getBounds(), { padding: [50, 50] });
@@ -940,15 +1055,35 @@ function stopPlayback() {
   updatePlaybackMarker();
 }
 
+const isMapAnimating = ref(false);
+
+const onMapMoveStart = () => { isMapAnimating.value = true; };
+const onMapMoveEnd = () => { 
+  isMapAnimating.value = false; 
+  if (activeMainTab.value === 'Archive' && isHistoryPlaying.value) {
+    updatePlaybackMarker();
+  }
+};
+
 function updatePlaybackMarker() {
-  if (!historyMarker || historyData.value.length === 0) return;
+  if (!historyMarker || historyData.value.length === 0 || !map.value) return;
+
+  // Safety guard against zoom/pan crashes
+  if (isMapAnimating.value || map.value._animating) return;
 
   const point = historyData.value[historyIndex.value];
   if (!point) return;
 
+  const historyColor = themeStore.isDarkMode ? '#36ffb4' : '#10b981';
+
   const latlng = [point.lat, point.lng];
-  historyMarker.setLatLng(latlng);
-  historyMarker.setIcon(createCarIcon('#4f7cff', point.angle || 0));
+  
+  try {
+    historyMarker.setLatLng(latlng);
+    historyMarker.setIcon(createCarIcon(historyColor, point.angle || 0));
+  } catch (e) {
+    console.warn('Deferred history marker update', e);
+  }
 }
 
 const fetchFleetData = async () => {
@@ -956,7 +1091,6 @@ const fetchFleetData = async () => {
     const res = await api.get('/api/tracking/objects');
     if (res.data && res.data.ok) {
       fleetData.value = res.data.data;
-      drawMarkers();
     }
   } catch (err) {
     if (err.response && err.response.status === 401) {
@@ -1059,6 +1193,13 @@ onUnmounted(() => {
   if (eventsSearchDebounce) clearTimeout(eventsSearchDebounce);
 
   window.removeEventListener('resize', handleResize);
+
+  if (map.value) {
+    map.value.off('zoomstart', onMapMoveStart);
+    map.value.off('zoomend', onMapMoveEnd);
+    map.value.off('movestart', onMapMoveStart);
+    map.value.off('moveend', onMapMoveEnd);
+  }
 
   for (const key in markersMap) {
     if (Object.prototype.hasOwnProperty.call(markersMap, key)) {
@@ -1203,7 +1344,7 @@ onUnmounted(() => {
 }
 
 .objects-panel {
-  width: 320px;
+  width: 400px;
   background: var(--card);
   backdrop-filter: blur(12px);
   border-right: 1px solid var(--border);
@@ -1215,40 +1356,47 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 
-.panel-tabs {
+.panel-tabs-modern {
   display: flex;
-  background: var(--input-bg);
+  padding: 12px 14px;
+  gap: 10px;
+  background: var(--card);
   border-bottom: 1px solid var(--border);
+  align-items: center;
   flex-shrink: 0;
 }
 
-.panel-tab {
-  flex: 1;
+.panel-tab-pill {
+  flex: 1; /* Make tabs fill the width */
+  height: 52px;
+  border-radius: 12px;
+  border: none;
+  background: #f1f5f9;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 11px 0;
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 600;
+  gap: 8px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  letter-spacing: 0.3px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #64748b;
 }
 
-.panel-tab:hover {
-  color: var(--text);
-  background: var(--border);
+.panel-tab-pill.active {
+  background: #0055ff;
+  color: #ffffff;
+  box-shadow: 0 4px 15px rgba(0, 85, 255, 0.25);
+  flex: 1.5; /* Give more space to the active tab to prevent text cutoff */
 }
 
-.panel-tab.active {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
-  background: var(--card);
+.pill-label {
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.nav-icon {
+  flex-shrink: 0;
+  transition: color 0.2s;
 }
 
 .objects-panel.collapsed {
@@ -1275,6 +1423,105 @@ onUnmounted(() => {
 .objects-panel.collapsed .header-top {
   justify-content: center;
   margin-bottom: 0;
+}
+
+/* Modern Premium Map Controls Exact Figma Match */
+.custom-map-controls {
+  position: absolute;
+  top: 90px;
+  left: 20px; /* Moved to left */
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  z-index: 1000;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.control-pill {
+  background: #ffffff;
+  border: 1px solid rgba(0,0,0,0.05); /* Softer border */
+  border-radius: 14px; /* Slightly more rounded */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.08); /* Premium soft shadow */
+  overflow: hidden;
+  padding: 4px 0;
+}
+
+.tool-btn {
+  background: transparent;
+  border: none;
+  width: 48px;
+  height: 52px; /* Taller buttons */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tool-btn svg {
+  width: 25px;
+  height: 25px;
+  stroke-width: 2.2; /* Consistent stroke */
+}
+
+.tool-btn.blue-btn {
+  color: #2563eb;
+}
+
+.tool-btn:hover {
+  background: #f8fafc;
+  color: #1d4ed8;
+}
+
+.tool-btn.active {
+  color: #1d4ed8;
+  background: #eff6ff;
+}
+
+.tool-btn.blue-btn:hover {
+  color: #1e40af;
+}
+
+.tool-divider {
+  width: 30px; /* Centered narrow divider */
+  height: 1px;
+  background: #f1f5f9;
+}
+
+/* Ensure controls adapt to dark mode but keep Figma vibe */
+body.dark-mode .control-pill {
+  background: #1e293b;
+  border-color: rgba(255,255,255,0.06);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+}
+
+body.dark-mode .tool-btn {
+  color: #94a3b8;
+}
+
+body.dark-mode .tool-btn.blue-btn {
+  color: #38bdf8;
+}
+
+body.dark-mode .tool-btn:hover, body.dark-mode .tool-btn.active {
+  background: #334155;
+  color: #38bdf8;
+}
+
+body.dark-mode .tool-divider {
+  background: #334155;
+}
+
+@media (max-width: 768px) {
+  .custom-map-controls {
+    left: auto;
+    right: 20px; /* Back to right for mobile */
+    top: 20px;
+  }
 }
 
 .toggle-btn {
@@ -1397,6 +1644,8 @@ onUnmounted(() => {
   margin: 15px 0 0 0;
 }
 
+
+
 .v-row-item {
   display: flex;
   align-items: center;
@@ -1509,6 +1758,8 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
 }
+
+
 
 .map-container {
   flex: 1;

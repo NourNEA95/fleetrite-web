@@ -1,11 +1,11 @@
 <template>
   <div class="follow-page-layout">
-    <div class="header">
+    <div class="header follow-header-modern">
       <div class="logo">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="var(--accent)"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="#60a5fa"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
         <span class="logo-text">Live Follow</span>
       </div>
-      <div class="vehicle-info" v-if="vehicle">
+      <div class="vehicle-info-pill" v-if="vehicle">
         <span class="v-name">{{ vehicle.name }}</span>
         <span class="v-status" :class="vehicle.status?.toLowerCase()">{{ vehicle.status }}</span>
         <span class="v-speed">{{ Math.round(vehicle.speed || 0) }} km/h</span>
@@ -158,15 +158,15 @@ function updateMap(v) {
   overflow: hidden;
 }
 
-.header {
+.follow-header-modern {
   height: 60px;
-  background: var(--card, #1e293b);
+  background: #0c335a !important;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  border-bottom: 2px solid #1e4b7a;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
   z-index: 1000;
 }
 
@@ -175,39 +175,47 @@ function updateMap(v) {
   align-items: center;
   gap: 10px;
 }
+
 .logo-text {
-  font-size: 18px;
-  font-weight: 700;
-  color: #fff;
+  font-size: 19px;
+  font-weight: 800;
+  color: #ffffff !important;
+  letter-spacing: 0.5px;
 }
 
-.vehicle-info {
+.vehicle-info-pill {
   display: flex;
   align-items: center;
-  gap: 15px;
-  background: rgba(0,0,0,0.2);
-  padding: 8px 15px;
-  border-radius: 8px;
+  gap: 12px;
+  background: #cbd5e1;
+  padding: 6px 16px;
+  border-radius: 10px;
+  color: #0c335a;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
 }
+
 .v-name {
-  font-weight: 600;
-  font-size: 15px;
+  font-weight: 800;
+  font-size: 16px;
 }
+
 .v-status {
-  font-size: 11px;
+  font-size: 10px;
   text-transform: uppercase;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
 }
-.v-status.moving { background: rgba(54, 255, 180, 0.2); color: #36ffb4;}
-.v-status.idle { background: rgba(255, 204, 0, 0.2); color: #ffcc00;}
-.v-status.offline { background: rgba(255, 90, 120, 0.2); color: #ff5a78;}
+
+.v-status.moving { background: #36ffb4; color: #064e3b; }
+.v-status.idle { background: #ffcc00; color: #78350f; }
+.v-status.offline { background: #ff5a78; color: #ffffff; }
 
 .v-speed {
   font-size: 16px;
-  font-weight: 700;
-  color: var(--accent, #4f7cff);
+  font-weight: 800;
+  color: #2563eb;
 }
 
 .map-wrapper {
@@ -242,16 +250,16 @@ function updateMap(v) {
 
 .info-bar {
   position: absolute;
-  bottom: 20px;
+  bottom: 25px;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--card, #1e293b);
+  background: #ffffff !important;
   display: flex;
-  gap: 20px;
-  padding: 12px 25px;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-  border: 1px solid rgba(255,255,255,0.05);
+  gap: 40px;
+  padding: 15px 40px;
+  border-radius: 15px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+  border: 1.5px solid #e2e8f0;
   z-index: 1000;
 }
 .info-item {
@@ -260,15 +268,17 @@ function updateMap(v) {
   align-items: center;
 }
 .info-item .label {
-  font-size: 11px;
-  color: var(--muted, #94a3b8);
+  font-size: 12px;
+  color: #64748b !important;
+  font-weight: 700;
   text-transform: uppercase;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
 }
 .info-item .value {
-  font-size: 14px;
-  font-weight: 700;
-  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+  color: #0c335a !important;
 }
 .text-green { color: #36ffb4 !important; }
 .text-danger { color: #ef4444 !important; }

@@ -9,12 +9,15 @@ use App\Http\Controllers\Api\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('/login/slider', [AuthController::class, 'getSliderSlides']);
+
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     
     // Tracking APIs
     Route::get('/tracking/objects', [TrackingController::class, 'getObjects']);
+    Route::get('/tracking/zones', [TrackingController::class, 'getZones']);
     
     // Grid APIs (Isolated)
     Route::get('/grid/details/{imei}', [\App\Http\Controllers\Api\GridController::class, 'getDetails']);

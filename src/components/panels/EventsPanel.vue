@@ -1,192 +1,118 @@
 <template>
-  <div class="events-panel" v-show="isPanelOpen">
-    <!-- Top Search Bar -->
-    <div class="panel-header-search">
-      <div class="search-box">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
-        <input type="text" v-model="searchModel" placeholder="Search" />
-      </div>
-    </div>
-
-    <!-- Data Table -->
-    <div class="table-container custom-scrollbar">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th class="w-time sortable" @click="toggleSort('dt_tracker')">
-              Time
-              <svg 
-                width="10" 
-                height="10" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                stroke-width="2" 
-                class="sort-icon"
-                :class="{ 'rotate-180': props.sortIdx === 'dt_tracker' && props.sortOrd === 'asc' }"
-              >
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </th>
-            <th>Object</th>
-            <th>Event</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          <tr v-if="loading">
-            <td colspan="3" class="empty-table-msg">Loading events...</td>
-          </tr>
-
-          <tr v-else v-for="event in filteredEvents" :key="event.id" class="event-row">
-            <td class="tabular-nums">{{ event.time }}</td>
-            <td>{{ event.object }}</td>
-            <td>{{ event.event }}</td>
-          </tr>
-
-          <tr v-if="!loading && filteredEvents.length === 0">
-            <td colspan="3" class="empty-table-msg">No records to view</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Footer Action Bar -->
-    <div class="panel-footer-actions">
-      <div class="pagination">
-        <button class="page-btn" :disabled="currentPageModel <= 1" @click="goToFirstPage">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="11 17 6 12 11 7"></polyline>
-            <polyline points="18 17 13 12 18 7"></polyline>
+  <div class="events-panel-modern" v-show="isPanelOpen">
+    <!-- Premium Header with Search & Pagination -->
+    <div class="panel-header-modern">
+      <div class="search-section">
+        <div class="search-box-pill">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
-        </button>
-
-        <button class="page-btn" :disabled="currentPageModel <= 1" @click="goToPrevPage">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="15 18 9 12 15 6"></polyline>
-          </svg>
-        </button>
-
-        <span class="page-text">Page</span>
-        <input type="text" class="page-input" v-model="currentPageModel" />
-        <span class="page-text">of {{ totalPages }}</span>
-
-        <button class="page-btn" :disabled="currentPageModel >= totalPages" @click="goToNextPage">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-        </button>
-
-        <button class="page-btn" :disabled="currentPageModel >= totalPages" @click="goToLastPage">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="13 17 18 12 13 7"></polyline>
-            <polyline points="6 17 11 12 6 7"></polyline>
-          </svg>
-        </button>
+          <input type="text" v-model="searchModel" placeholder="Search events..." />
+        </div>
       </div>
 
-      <div class="right-actions">
-        <select class="form-control select per-page" v-model="perPageModel">
-          <option :value="25">25</option>
-          <option :value="50">50</option>
-          <option :value="100">100</option>
-        </select>
-
-        <div class="menu-container dropdown-wrapper">
-          <button class="action-btn" @click.stop="showMenu = !showMenu">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="5" cy="12" r="1"></circle>
-              <circle cx="12" cy="12" r="1"></circle>
-              <circle cx="19" cy="12" r="1"></circle>
-            </svg>
-          </button>
-
-          <div class="custom-dropdown-list pop-upwards" v-if="showMenu" @click.stop>
-            <div class="dropdown-item" @click="handleExport">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mr-2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="17 8 12 3 7 8"></polyline>
-                <line x1="12" y1="3" x2="12" y2="15"></line>
-              </svg>
-              Export
-            </div>
-
-            <div class="dropdown-item text-danger" @click="handleDeleteAll">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mr-2">
-                <polyline points="3 6 5 6 21 6"></polyline>
-                <path d="M19 6v14a2 2 0 0 1-2-2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-              </svg>
-              Delete all events
-            </div>
-          </div>
+      <div class="header-action-row">
+        <div class="total-badge">
+          <span class="label">Total</span>
+          <span class="value">{{ totalItemsCount || 0 }}</span>
         </div>
 
-        <button class="action-btn" @click="handleRefresh">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="1 4 1 10 7 10"></polyline>
-            <polyline points="23 20 23 14 17 14"></polyline>
-            <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
-          </svg>
-        </button>
+        <div class="pagination-modern">
+          <button class="arrow-btn" :disabled="currentPageModel <= 1" @click="goToPrevPage">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </button>
+          
+          <div class="page-indicator">
+            <span class="current">{{ currentPageModel }}</span>
+            <span class="sep">.</span>
+            <span class="total">{{ totalPages }}</span>
+          </div>
+
+          <button class="arrow-btn" :disabled="currentPageModel >= totalPages" @click="goToNextPage">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+        </div>
+
+        <div class="menu-action-wrapper">
+          <button class="more-options-btn" @click.stop="showMenu = !showMenu">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="12" cy="5" r="2"></circle>
+              <circle cx="12" cy="12" r="2"></circle>
+              <circle cx="12" cy="19" r="2"></circle>
+            </svg>
+          </button>
+          <!-- Menu Dropdown -->
+          <div class="dropdown-popup" v-if="showMenu">
+             <div class="dropdown-option" @click="handleRefresh">Refresh Data</div>
+             <div class="dropdown-option" @click="handleExport">Export to Excel</div>
+             <div class="dropdown-option destructive" @click="handleDeleteAll">Delete All</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scrollable Events Grid -->
+    <div class="events-scroll-area custom-scrollbar">
+      <div v-if="loading" class="events-loading">
+        <div class="spinner"></div>
+        <span>Updating events...</span>
+      </div>
+
+      <div v-else-if="filteredEvents.length === 0" class="empty-events-state">
+        <div class="empty-icon">📅</div>
+        <p>No events found for today</p>
+      </div>
+
+      <div v-else class="events-grid">
+        <div 
+          v-for="event in filteredEvents" 
+          :key="event.id" 
+          class="event-card-modern"
+        >
+          <div class="card-left">
+            <div class="status-icon-wrapper" :class="getEventCategory(event.event)">
+              <component :is="getEventIcon(event.event)" />
+            </div>
+            <div class="event-details-main">
+              <div class="event-type-name">{{ event.event }}</div>
+              <div class="event-time-stamp">{{ formatEventTime(event.time) }}</div>
+            </div>
+          </div>
+
+          <div class="card-right">
+             <div class="vehicle-tag">
+               <svg class="v-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                 <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
+               </svg>
+               <span class="v-id">{{ event.object }}</span>
+             </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, h } from 'vue';
 
 const props = defineProps({
-  isPanelOpen: {
-    type: Boolean,
-    default: true
-  },
-  eventsList: {
-    type: Array,
-    default: () => []
-  },
-  searchQuery: {
-    type: String,
-    default: ''
-  },
-  currentPage: {
-    type: Number,
-    default: 1
-  },
-  totalPages: {
-    type: Number,
-    default: 1
-  },
-  perPage: {
-    type: Number,
-    default: 25
-  },
-  sortIdx: {
-    type: String,
-    default: 'dt_tracker'
-  },
-  sortOrd: {
-    type: String,
-    default: 'desc'
-  },
-  loading: {
-    type: Boolean,
-    default: false
-  }
+  isPanelOpen: { type: Boolean, default: true },
+  eventsList:  { type: Array,   default: () => [] },
+  searchQuery: { type: String,  default: '' },
+  currentPage: { type: Number,  default: 1 },
+  totalPages:  { type: Number,  default: 1 },
+  perPage:     { type: Number,  default: 25 },
+  sortIdx:     { type: String,  default: 'dt_tracker' },
+  sortOrd:     { type: String,  default: 'desc' },
+  loading:     { type: Boolean, default: false }
 });
 
 const emit = defineEmits([
-  'update:searchQuery',
-  'update:currentPage',
-  'update:perPage',
-  'update:sortIdx',
-  'update:sortOrd',
-  'refresh-events',
-  'delete-all-events',
-  'export-events'
+  'update:searchQuery', 'update:currentPage', 'update:perPage',
+  'update:sortIdx', 'update:sortOrd', 'refresh-events',
+  'delete-all-events', 'export-events'
 ]);
 
 const showMenu = ref(false);
@@ -200,10 +126,7 @@ const currentPageModel = computed({
   get: () => props.currentPage,
   set: (val) => {
     const parsed = Number(val);
-    if (Number.isNaN(parsed) || parsed < 1) {
-      emit('update:currentPage', 1);
-      return;
-    }
+    if (Number.isNaN(parsed) || parsed < 1) { emit('update:currentPage', 1); return; }
     emit('update:currentPage', parsed);
   }
 });
@@ -213,351 +136,379 @@ const perPageModel = computed({
   set: (val) => emit('update:perPage', Number(val))
 });
 
+const totalItemsCount = computed(() => props.eventsList.length);
+
 const filteredEvents = computed(() => {
   if (!searchModel.value) return props.eventsList;
-
+  const q = searchModel.value.toLowerCase();
   return props.eventsList.filter(e =>
-    (e.object || '').toLowerCase().includes(searchModel.value.toLowerCase()) ||
-    (e.event || '').toLowerCase().includes(searchModel.value.toLowerCase())
+    (e.object || '').toLowerCase().includes(q) ||
+    (e.event || '').toLowerCase().includes(q)
   );
 });
 
+// Event Icon Helpers
+const SpeedIcon = () => h('svg', { width: 16, height: 16, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", "stroke-width": "2.5" }, [
+  h('circle', { cx: 12, cy: 12, r: 10 }),
+  h('polyline', { points: "12 6 12 12 16 14" })
+]);
+
+const StoppedIcon = () => h('svg', { width: 16, height: 16, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", "stroke-width": "2.5" }, [
+  h('circle', { cx: 12, cy: 12, r: 10 }),
+  h('line', { x1: "8", y1: "12", x2: "16", y2: "12" })
+]);
+
+const OfflineIcon = () => h('svg', { width: 16, height: 16, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", "stroke-width": "2.5" }, [
+  h('path', { d: "M5 12.55a11 11 0 0 1 14.08 0" }),
+  h('path', { d: "M1.42 9a16 16 0 0 1 21.16 0" }),
+  h('path', { d: "M8.53 16.11a6 6 0 0 1 6.95 0" }),
+  h('line', { x1: "12", y1: "20", x2: "12.01", y2: "20" })
+]);
+
+const DefaultIcon = () => h('svg', { width: 16, height: 16, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", "stroke-width": "2.5" }, [
+  h('circle', { cx: 12, cy: 12, r: 10 }),
+  h('line', { x1: "12", y1: "8", x2: "12", y2: "12" }),
+  h('line', { x1: "12", y1: "16", x2: "12.01", y2: "16" })
+]);
+
+function getEventIcon(eventName) {
+  const name = (eventName || '').toLowerCase();
+  if (name.includes('speed')) return SpeedIcon;
+  if (name.includes('stop')) return StoppedIcon;
+  if (name.includes('off')) return OfflineIcon;
+  return DefaultIcon;
+}
+
+function getEventCategory(eventName) {
+  const name = (eventName || '').toLowerCase();
+  if (name.includes('speed')) return 'category-speed';
+  if (name.includes('stop')) return 'category-stop';
+  if (name.includes('off')) return 'category-offline';
+  return 'category-default';
+}
+
+function formatEventTime(timeStr) {
+  if (!timeStr) return '';
+  // Assuming format is already pretty clean, e.g. "2024-04-16 11:48:17"
+  // If we wanted to split into two lines as in design:
+  return timeStr; 
+}
+
 const handleClickOutside = (e) => {
-  if (!e.target.closest('.dropdown-wrapper')) {
-    showMenu.value = false;
-  }
+  if (!e.target.closest('.menu-action-wrapper')) showMenu.value = false;
 };
 
-function goToFirstPage() {
-  if (currentPageModel.value > 1) {
-    currentPageModel.value = 1;
-  }
-}
+function goToPrevPage() { if (currentPageModel.value > 1) currentPageModel.value--; }
+function goToNextPage() { if (currentPageModel.value < props.totalPages) currentPageModel.value++; }
+function handleRefresh() { emit('refresh-events'); showMenu.value = false; }
+function handleDeleteAll() { emit('delete-all-events'); showMenu.value = false; }
+function handleExport() { emit('export-events'); showMenu.value = false; }
 
-function goToPrevPage() {
-  if (currentPageModel.value > 1) {
-    currentPageModel.value = currentPageModel.value - 1;
-  }
-}
-
-function goToNextPage() {
-  if (currentPageModel.value < props.totalPages) {
-    currentPageModel.value = currentPageModel.value + 1;
-  }
-}
-
-function goToLastPage() {
-  if (currentPageModel.value < props.totalPages) {
-    currentPageModel.value = props.totalPages;
-  }
-}
-
-function toggleSort(col) {
-  if (props.sortIdx === col) {
-    emit('update:sortOrd', props.sortOrd === 'desc' ? 'asc' : 'desc');
-  } else {
-    emit('update:sortIdx', col);
-    emit('update:sortOrd', 'desc');
-  }
-}
-
-function handleRefresh() {
-  emit('refresh-events');
-}
-
-function handleDeleteAll() {
-  emit('delete-all-events');
-  showMenu.value = false;
-}
-
-function handleExport() {
-  emit('export-events');
-  showMenu.value = false;
-}
-
-onMounted(() => {
-  document.addEventListener('click', handleClickOutside);
-});
-
-onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside);
-});
+onMounted(() => { document.addEventListener('click', handleClickOutside); });
+onUnmounted(() => { document.removeEventListener('click', handleClickOutside); });
 </script>
 
 <style scoped>
-.events-panel {
+.events-panel-modern {
   display: flex;
   flex-direction: column;
-  height: calc(100% - 45px);
+  height: 100%;
   background: var(--card);
 }
 
-.panel-header-search {
-  padding: 12px 15px;
+.panel-header-modern {
+  padding: 16px;
   border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
+  background: var(--card);
 }
 
-.search-box {
+.search-box-pill {
   position: relative;
   width: 100%;
+  margin-bottom: 16px;
 }
 
-.search-box svg {
+.search-box-pill svg {
   position: absolute;
-  left: 12px;
+  left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--muted);
+  color: #94a3b8;
+  pointer-events: none;
 }
 
-.search-box input {
+.search-box-pill input {
   width: 100%;
-  padding: 9px 12px 9px 36px;
+  padding: 11px 16px 11px 40px;
   background: var(--input-bg);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 12px;
   color: var(--text);
-  font-size: 13px;
+  font-size: 14px;
   outline: none;
   transition: all 0.2s;
-  box-sizing: border-box;
 }
 
-.search-box input:focus {
+.search-box-pill input:focus {
   border-color: var(--accent);
-  background: rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 0 4px rgba(79, 124, 255, 0.1);
 }
 
-.table-container {
-  flex: 1;
-  overflow-y: auto;
-}
-
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-
-.data-table th {
-  position: sticky;
-  top: 0;
-  background: var(--card);
-  padding: 10px 15px;
-  text-align: left;
-  font-weight: 500;
-  color: var(--muted);
-  border-bottom: 1px solid var(--border);
-  z-index: 10;
-  white-space: nowrap;
-}
-
-.data-table td {
-  padding: 10px 15px;
-  border-bottom: 1px solid var(--border);
-  color: var(--text);
-}
-
-.w-time {
-  width: 80px;
-}
-
-.tabular-nums {
-  font-variant-numeric: tabular-nums;
-  color: var(--text);
-}
-
-.sort-icon {
-  margin-left: 4px;
-}
-
-.event-row:hover td {
-  background: var(--border);
-  cursor: default;
-}
-
-.sortable {
-  cursor: pointer;
-}
-
-.sortable:hover {
-  background: var(--border) !important;
-  color: var(--text) !important;
-}
-
-.rotate-180 {
-  transform: rotate(180deg);
-}
-
-.empty-table-msg {
-  text-align: center !important;
-  padding: 30px !important;
-  color: var(--muted) !important;
-  font-style: italic;
-}
-
-.panel-footer-actions {
+.header-action-row {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   gap: 12px;
-  padding: 12px 10px;
-  border-top: 1px solid var(--border);
-  background: var(--card);
-  flex-shrink: 0;
 }
 
-.pagination {
+.total-badge {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.total-badge .label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.total-badge .value {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.pagination-modern {
   display: flex;
   align-items: center;
-  gap: 4px;
-  flex-shrink: 0;
+  gap: 10px;
 }
 
-.page-btn {
-  background: transparent;
+.arrow-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
   border: none;
-  color: var(--muted);
-  cursor: pointer;
+  background: #f1f5f9;
+  color: #64748b;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4px;
-  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-.page-btn:hover:not(:disabled) {
-  background: var(--border);
-  color: var(--text);
+.arrow-btn:hover:not(:disabled) {
+  background: #e2e8f0;
+  color: #0f172a;
 }
 
-.page-btn:disabled {
+.arrow-btn:disabled {
   opacity: 0.3;
   cursor: not-allowed;
 }
 
-.page-text {
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.page-input {
-  width: 32px;
-  text-align: center;
-  background: var(--input-bg);
-  border: 1px solid var(--border);
-  color: var(--text);
-  border-radius: 4px;
-  padding: 4px 0;
-  font-size: 13px;
-  outline: none;
-}
-
-.page-input:focus {
-  border-color: var(--accent);
-}
-
-.form-control.select {
-  appearance: none;
-  -webkit-appearance: none;
-  background-color: var(--input-bg);
-  border: 1px solid var(--border);
-  color: var(--text);
-  border-radius: 4px;
-  padding: 4px 22px 4px 8px;
-  font-size: 13px;
-  outline: none;
-  background-image: url('data:image/svg+xml;utf8,<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="gray" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>');
-  background-repeat: no-repeat;
-  background-position: right 6px center;
-  cursor: pointer;
-  margin-left: 4px;
-}
-
-.right-actions {
+.page-indicator {
   display: flex;
-  gap: 8px;
   align-items: center;
-  flex-shrink: 0;
+  gap: 6px;
 }
 
-.action-btn {
-  background: transparent;
-  border: none;
-  color: var(--muted);
-  width: 28px;
-  height: 28px;
-  border-radius: 4px;
+.page-indicator span {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.page-indicator .current {
+  color: #fff;
+  background: #0055ff;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 50%;
+  font-size: 12px;
+}
+
+.page-indicator .total {
+  color: #94a3b8;
+}
+
+.more-options-btn {
+  background: #f1f5f9;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: #64748b;
   cursor: pointer;
-  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.action-btn:hover {
-  background: var(--border);
-  color: var(--text);
-}
-
-.dropdown-wrapper {
+.menu-action-wrapper {
   position: relative;
 }
 
-.custom-dropdown-list {
+.dropdown-popup {
   position: absolute;
+  top: 100%;
   right: 0;
+  margin-top: 8px;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 6px;
-  min-width: 180px;
+  border-radius: 12px;
+  min-width: 160px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.25);
   z-index: 100;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-  display: flex;
-  flex-direction: column;
-  padding: 4px 0;
+  overflow: hidden;
+  padding: 4px;
 }
 
-.custom-dropdown-list.pop-upwards {
-  bottom: 35px;
-  top: auto;
-}
-
-.dropdown-item {
-  display: flex;
-  align-items: center;
-  padding: 8px 15px;
+.dropdown-option {
+  padding: 10px 16px;
   font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
   color: var(--text);
+  border-radius: 8px;
 }
 
-.dropdown-item:hover {
+.dropdown-option:hover {
   background: var(--border);
 }
 
-.text-danger {
+.dropdown-option.destructive {
   color: #ef4444;
 }
 
-.mr-2 {
-  margin-right: 8px;
+/* Events Area */
+.events-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
 }
 
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+.events-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
+
+.event-card-modern {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.1);
-  border-radius: 4px;
+
+.event-card-modern:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  border-color: var(--accent);
 }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255,255,255,0.2);
+
+.card-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
+
+.status-icon-wrapper {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.category-speed { background: #eefdf6; color: #10b981; }
+.category-stop  { background: #fef2f2; color: #ef4444; }
+.category-offline { background: #f8fafc; color: #64748b; }
+.category-default { background: #f1f5f9; color: #94a3b8; }
+
+.event-type-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.event-time-stamp {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.card-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.vehicle-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f8fafc;
+  padding: 4px 10px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.v-icon { color: #64748b; }
+
+.v-id {
+  font-size: 12px;
+  font-weight: 700;
+  color: #334155;
+}
+
+.events-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--muted);
+  gap: 12px;
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(0, 85, 255, 0.1);
+  border-top-color: #0055ff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.empty-events-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.5; }
+
+.custom-scrollbar::-webkit-scrollbar { width: 5px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.05); border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.1); }
 </style>

@@ -1,19 +1,20 @@
 :root{
-  --bg1:#0b1220;
-  --bg2:#0f1b33;
-  --card:#111a2d;
-  --text:#e8eefc;
-  --muted:#a9b6d6;
-  --accent:#4f7cff;
-  --border:rgba(255,255,255,.08);
-  --glass:rgba(17,26,45,.86);
-  --input-bg:rgba(0,0,0,.18);
-  --status-moving: #36ffb4;
-  --status-moving-bg: rgba(54, 255, 180, 0.12);
-  --status-idle: #ffcc00;
-  --status-idle-bg: rgba(255, 204, 0, 0.12);
-  --status-offline: #ff5a78;
-  --status-offline-bg: rgba(255, 90, 120, 0.15);
+  --bg1:#080c14;
+  --bg2:#0f172a;
+  --card:#1e293b;
+  --text:#f8fafc;
+  --muted:#94a3b8;
+  --accent:#3b82f6;
+  --border:rgba(255,255,255,.06);
+  --glass:rgba(15,23,42,.8);
+  --glass-border:rgba(255,255,255,0.1);
+  --input-bg:rgba(0,0,0,.25);
+  --status-moving: #10b981;
+  --status-moving-bg: rgba(16, 185, 129, 0.12);
+  --status-idle: #fbbf24;
+  --status-idle-bg: rgba(251, 191, 36, 0.12);
+  --status-offline: #f43f5e;
+  --status-offline-bg: rgba(244, 63, 94, 0.15);
 }
 
 body.light-mode {
@@ -25,6 +26,7 @@ body.light-mode {
   --accent:#2563eb;
   --border:rgba(0,0,0,.08);
   --glass:rgba(255,255,255,.9);
+  --glass-border:rgba(0,0,0,0.05);
   --input-bg:#f1f5f9;
   
   --status-moving: #10b981;
@@ -46,9 +48,9 @@ body{
 }
 
 body:not(.light-mode) {
-  background: radial-gradient(900px 500px at 20% 10%, rgba(79,124,255,.25), transparent 60%),
-  radial-gradient(900px 500px at 80% 20%, rgba(40,210,255,.15), transparent 60%),
-  linear-gradient(180deg, var(--bg1), var(--bg2));
+  background: radial-gradient(1000px 600px at 10% 0%, rgba(59,130,246,.12), transparent 80%),
+  radial-gradient(800px 500px at 90% 100%, rgba(139,92,246,.08), transparent 80%),
+  var(--bg1);
 }
 
 body.light-mode {

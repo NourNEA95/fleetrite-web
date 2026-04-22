@@ -71,4 +71,30 @@ class AuthController extends Controller
 
         return response()->json(['ok' => true]);
     }
+
+    public function getSliderSlides()
+    {
+        $slides = [
+            [
+                'title' => 'FleetRite',
+                'description' => 'Automate Mail & Parcels delivery operations via our innovative post management solution which provides real-time tracking, automated dispatching',
+                'image' => null
+            ],
+            [
+                'title' => 'Smart Logistics',
+                'description' => 'Optimize your fleet performance with our advanced analytics and real-time monitoring tools.',
+                'image' => null
+            ],
+            [
+                'title' => 'Global Connectivity',
+                'description' => 'Stay connected with your assets anywhere in the world with our reliable tracking network.',
+                'image' => null
+            ]
+        ];
+
+        return response()->json([
+            'ok' => true,
+            'slides' => $slides
+        ]);
+    }
 }
